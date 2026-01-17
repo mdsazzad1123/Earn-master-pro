@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script src="session.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History</title>
+    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-image: url('https://i.postimg.cc/BZr3jn2F/79b94cde2352f5d6099840bd0ce926a2.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; justify-content: center; 
+        }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+
+        .container { width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.95); min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { background-color: #00a651; color: white; padding: 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .header i { margin-right: 15px; cursor: pointer; }
+
+        .tabs { display: flex; background: white; border-bottom: 1px solid #eee; }
+        .tab { flex: 1; padding: 15px; text-align: center; font-size: 14px; font-weight: bold; color: #666; cursor: pointer; transition: 0.3s; }
+        .tab.active { color: #00a651; border-bottom: 3px solid #00a651; }
+
+        .history-list { padding: 15px; }
+        .history-item { 
+            background: white; border-radius: 12px; padding: 15px; margin-bottom: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-left: 5px solid #ccc;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .details b { display: block; font-size: 15px; color: #333; margin-bottom: 3px; }
+        .details span { font-size: 11px; color: #888; display: block; margin-top: 5px; }
+        .details small { font-size: 12px; color: #555; font-family: monospace; background: #f0f0f0; padding: 2px 5px; border-radius: 4px; }
+
+        .amount-status { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .amount { font-size: 16px; font-weight: bold; display: block; margin-bottom: 5px; }
+        .deposit-amt { color: #00a651; }
+        .withdraw-amt { color: #f44336; }
+        
+        .status-badge { font-size: 9px; font-weight: 800; padding: 3px 10px; border-radius: 4px; display: inline-block; text-align: center; min-width: 65px; color: #ffffff; text-transform: uppercase; }
+        
+        .bg-orange { background-color: #FF8C00; }
+        .bg-green { background-color: #27ae60; }
+        .bg-red { background-color: #e74c3c; }
+
+        .loading { text-align: center; padding: 30px; color: #00a651; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+<div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('profile.html')"></i>
+        <div style="flex-grow: 1; text-align: center; margin-right: 30px;">Transaction History</div>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" id="depositTab" onclick="switchTab('deposit')">DEPOSITS</div>
+        <div class="tab" id="withdrawTab" onclick="switchTab('withdraw')">WITHDRAWS</div>
+    </div>
+
+    <div id="loading" class="loading" style="display: none;"><i class="fa-solid fa-spinner fa-spin fa-2x"></i></div>
+    <div class="history-list" id="historyContainer"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+        authDomain: "test-54fa2.firebaseapp.com",
+        projectId: "test-54fa2",
+        appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const currentUserId = localStorage.getItem('currentUserId');
+
+    window.navigateWithAnimation = (url) => {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        setTimeout(() => { window.location.replace(url); }, 800);
+    };
+
+    let currentTab = 'deposit';
+    let unsubscribe = null; 
+
+    window.switchTab = (type) => {
+        currentTab = type;
+        document.getElementById('depositTab').classList.toggle('active', type === 'deposit');
+        document.getElementById('withdrawTab').classList.toggle('active', type === 'withdraw');
+        fetchHistory();
+    };
+
+    async function fetchHistory() {
+        if (!currentUserId) return;
+        
+        if (unsubscribe) unsubscribe();
+
+        const container = document.getElementById('historyContainer');
+        const loader = document.getElementById('loading');
+        container.innerHTML = "";
+        loader.style.display = "block";
+
+        const collectionName = currentTab === 'deposit' ? "depositRequests" : "withdraw_requests";
+        
+        // রিয়েল-টাইম কুয়েরি
+        const q = query(
+            collection(db, collectionName), 
+            where("userId", "==", currentUserId)
+        );
+
+        unsubscribe = onSnapshot(q, (querySnapshot) => {
+            loader.style.display = "none";
+            container.innerHTML = "";
+
+            if (querySnapshot.empty) {
+                container.innerHTML = `<div style="text-align:center; padding:50px; color:#999;">No records found</div>`;
+                return;
+            }
+
+            let items = [];
+            querySnapshot.forEach(doc => {
+                items.push({ id: doc.id, ...doc.data() });
+            });
+
+            // সর্টিং: নতুনগুলো আগে
+            items.sort((a, b) => (b.submittedAt?.seconds || 0) - (a.submittedAt?.seconds || 0));
+
+            items.forEach((data) => {
+                // তারিখ সুন্দরভাবে দেখানোর ফরম্যাট
+                const date = data.submittedAt ? new Date(data.submittedAt.seconds * 1000).toLocaleString('en-GB', { 
+                    day: '2-digit', month: 'short', year: 'numeric', 
+                    hour: '2-digit', minute: '2-digit', hour12: true 
+                }) : "Processing...";
+                
+                let status = (data.status || "pending").toLowerCase();
+                let badgeClass = "bg-orange";
+                let displayText = "PENDING";
+
+                if (status === "approved" || status === "success" || status === "completed") {
+                    badgeClass = "bg-green"; 
+                    displayText = "SUCCESS";
+                } else if (status === "rejected" || status === "failed") {
+                    badgeClass = "bg-red"; 
+                    displayText = "REJECTED";
+                }
+
+                const identifier = currentTab === 'deposit' ? data.transactionId : data.accountNumber;
+
+                const item = document.createElement('div');
+                item.className = `history-item`;
+                item.style.borderLeftColor = (badgeClass === "bg-orange") ? "#FF8C00" : (badgeClass === "bg-green" ? "#27ae60" : "#e74c3c");
+
+                item.innerHTML = `
+                    <div class="details">
+                        <b>${currentTab === 'deposit' ? 'Deposit' : 'Withdraw'}  ${data.method}</b>
+                        <small>${currentTab === 'deposit' ? 'TrxID:' : 'To:'} ${identifier || 'N/A'}</small>
+                        <span><i class="fa-regular fa-clock"></i> ${date}</span>
+                    </div>
+                    <div class="amount-status">
+                        <span class="amount ${currentTab === 'deposit' ? 'deposit-amt' : 'withdraw-amt'}">
+                            ${currentTab === 'deposit' ? '+' : '-'} ৳${data.amount}
+                        </span>
+                        <span class="status-badge ${badgeClass}">${displayText}</span>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }, (error) => {
+            console.error(error);
+            loader.style.display = "none";
+            container.innerHTML = `<p style="text-align:center; color:red; padding:20px;">Error Loading Data</p>`;
+        });
+    }
+
+    fetchHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Download App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f4f7f6; display: flex; justify-content: center; }
+        
+        .container { 
+            width: 100%; max-width: 400px; 
+            background: #ffffff; min-height: 100vh; position: relative; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.05); 
+        }
+
+        .header { background-color: #00a651; color: white; padding: 18px 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .header i { margin-right: 15px; cursor: pointer; }
+
+        .download-content { padding: 35px 25px; text-align: center; }
+        
+        /* App Logo Styling */
+        .app-logo-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .app-logo { 
+            width: 100px; 
+            height: 100px; 
+            border-radius: 22px; 
+            box-shadow: 0 10px 20px rgba(0,166,81,0.15); 
+            object-fit: cover;
+            border: 3px solid #f0f0f0;
+        }
+        
+        h2 { margin: 0; color: #333; font-size: 22px; }
+        .version { color: #00a651; font-weight: bold; font-size: 14px; margin-bottom: 25px; background: #e8f5e9; display: inline-block; padding: 5px 18px; border-radius: 50px; margin-top: 10px; }
+        
+        .btn-download { 
+            width: 100%; background: #00a651; color: white; border: none; 
+            padding: 16px; border-radius: 15px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; display: flex; justify-content: center; align-items: center; 
+            gap: 12px; text-decoration: none; box-shadow: 0 8px 20px rgba(0, 166, 81, 0.2);
+            transition: 0.3s;
+        }
+        .btn-download:active { transform: scale(0.96); }
+
+        .instruction-box { margin-top: 35px; text-align: left; background: #f9f9f9; padding: 20px; border-radius: 20px; }
+        .instruction-box h4 { margin: 0 0 15px; font-size: 15px; color: #333; border-left: 4px solid #00a651; padding-left: 10px; }
+        .step { display: flex; gap: 12px; margin-bottom: 15px; }
+        .step-num { 
+            background: #00a651; color: white; width: 22px; height: 22px; 
+            border-radius: 50%; display: flex; justify-content: center; align-items: center; 
+            font-size: 12px; flex-shrink: 0; font-weight: bold;
+        }
+        .step-text b { display: block; font-size: 14px; color: #333; }
+        .step-text span { font-size: 12px; color: #777; line-height: 1.4; }
+
+        /* Loader */
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 100% { clip-path: inset(0 0 95% 0); } }
+    </style>
+</head>
+<body>
+
+<div id="loader-overlay">
+    <div class="proc-9">
+        <img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img">
+    </div>
+    <p style="margin-top: 15px; color: #fff; font-size: 16px; font-weight: bold;">Loading...</p>
+</div>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-chevron-left" onclick="goBack()"></i>
+        <div>Download App</div>
+    </div>
+
+    <div class="download-content">
+        <div class="app-logo-container">
+            <img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" alt="App Logo" class="app-logo">
+        </div>
+        
+        <h2>EarnMaster Pro</h2>
+        <span class="version" id="verTxt">v1.0.2 • 12.5 MB</span>
+
+        <a id="dlBtn" href="#" class="btn-download">
+            <i class="fa-solid fa-cloud-arrow-down"></i> DOWNLOAD APK
+        </a>
+
+        <div class="instruction-box">
+            <h4>Installation Guide</h4>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text"><b>Download File</b><span>Click download and wait for the APK file.</span></div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text"><b>Unknown Sources</b><span>Go to Settings and allow "Unknown Apps" installation.</span></div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text"><b>Enjoy App</b><span>Open the downloaded file and click 'Install'.</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+    authDomain: "test-54fa2.firebaseapp.com",
+    projectId: "test-54fa2",
+    appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadAppInfo() {
+    const docRef = doc(db, "settings", "links");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if(data.apk_link) document.getElementById('dlBtn').href = data.apk_link;
+      if(data.app_version) document.getElementById('verTxt').innerText = data.app_version;
+    }
+  }
+  loadAppInfo();
+</script>
+
+<script>
+    function goBack() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        setTimeout(function() {
+            window.history.back();
+        }, 1200);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script src="session.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Payment</title>
+    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-image: url('https://i.postimg.cc/BZr3jn2F/79b94cde2352f5d6099840bd0ce926a2.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; justify-content: center; 
+        }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+
+        .container { 
+            width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.95); 
+            min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+            padding-bottom: 30px; 
+        }
+        .header { background-color: #00a651; color: white; padding: 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; }
+        .header i { margin-right: 15px; cursor: pointer; }
+
+        .payment-box { padding: 20px; text-align: center; }
+        .method-icon { width: 80px; height: auto; margin-bottom: 10px; border-radius: 10px; }
+        .amount-display { font-size: 28px; font-weight: bold; color: #00a651; margin: 10px 0; }
+        
+        .step-box { background: white; border: 1px solid #eee; border-radius: 12px; padding: 15px; margin-top: 20px; text-align: left; }
+        .step-title { font-weight: bold; color: #333; margin-bottom: 10px; display: block; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
+        
+        .copy-field { display: flex; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px dashed #00a651; }
+        .copy-field span { flex-grow: 1; font-weight: bold; color: #444; font-size: 18px; }
+        .copy-btn { color: #00a651; cursor: pointer; font-size: 14px; font-weight: bold; }
+
+        .input-group { margin-top: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 14px; color: #666; margin-bottom: 8px; font-weight: 500; }
+        .input-group input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; outline: none; }
+        
+        .trx-error { color: #ff0000; font-size: 12px; margin-top: 5px; display: none; font-weight: bold; }
+
+        .btn-confirm { width: 100%; background: #00a651; color: white; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 25px; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-confirm:disabled { background: #888; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+<div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="container" id="mainContainer">
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('deposit.html')"></i>
+        <div style="flex-grow: 1; text-align: center; margin-right: 30px;">Payment</div>
+    </div>
+
+    <div class="payment-box">
+        <img id="paymentMethodImg" src="" alt="method" class="method-icon">
+        <div style="color: #666; font-size: 14px;">Total Payable Amount</div>
+        <div class="amount-display" id="displayAmount">৳0.00</div>
+
+        <div class="step-box">
+            <span class="step-title">Step 1: Copy Number</span>
+            <div class="copy-field">
+                <span id="adminNumber">Loading...</span>
+                <div class="copy-btn" onclick="copyNumber()">COPY</div>
+            </div>
+            <p style="font-size: 11px; color: #888; margin-top: 5px;">দয়া করে উপরের নম্বরে Send Money করুন</p>
+        </div>
+
+        <div class="step-box">
+            <span class="step-title">Step 2: Verification</span>
+            <div class="input-group">
+                <label>Enter Transaction ID (TrxID)</label>
+                <input type="text" id="trxIdInput" placeholder="Enter 10 digit TxID">
+                <div id="trxErrorMsg" class="trx-error"></div>
+            </div>
+        </div>
+
+        <button class="btn-confirm" id="confirmBtn" onclick="submitPayment()">
+            <span id="btnText">CONFIRM PAYMENT</span>
+        </button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+        authDomain: "test-54fa2.firebaseapp.com",
+        projectId: "test-54fa2",
+        appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const userId = localStorage.getItem('currentUserId');
+    const loader = document.getElementById('loader-overlay');
+    const errorMsg = document.getElementById('trxErrorMsg');
+
+    window.navigateWithAnimation = (url) => {
+        loader.style.display = 'flex';
+        setTimeout(() => { window.location.replace(url); }, 800);
+    };
+
+    async function loadRechargeData() {
+        try {
+            const userRef = doc(db, "temp_deposits", userId);
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                document.getElementById('displayAmount').innerText = "৳" + userData.amount;
+                
+                const settingsSnap = await getDoc(doc(db, "settings", "app_settings"));
+                if (settingsSnap.exists()) {
+                    const settings = settingsSnap.data();
+                    const img = document.getElementById('paymentMethodImg');
+                    let numberPool = [];
+
+                    if(userData.method === "bKash") {
+                        img.src = "https://i.postimg.cc/kMHrMBwk/images-(7).png";
+                        numberPool = settings.bkash_numbers || []; 
+                    } else {
+                        img.src = "https://i.postimg.cc/NM0VBcHn/1679248787Nagad-Logo-(1).png";
+                        numberPool = settings.nagad_numbers || []; 
+                    }
+
+                    if (numberPool.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * numberPool.length);
+                        document.getElementById('adminNumber').innerText = numberPool[randomIndex];
+                    } else {
+                        document.getElementById('adminNumber').innerText = "No Number Set";
+                    }
+                }
+            } else {
+                window.location.replace('deposit.html');
+            }
+        } catch (e) { console.error(e); }
+    }
+    loadRechargeData();
+
+    window.copyNumber = () => {
+        const num = document.getElementById('adminNumber').innerText;
+        if(num === "Loading..." || num === "No Number Set") return;
+        navigator.clipboard.writeText(num).then(() => {
+            alert("Number Copied: " + num);
+        });
+    };
+
+    window.submitPayment = async () => {
+        const trxId = document.getElementById('trxIdInput').value.trim();
+        const btn = document.getElementById('confirmBtn');
+        const btnText = document.getElementById('btnText');
+        const adminNumber = document.getElementById('adminNumber').innerText;
+
+        if(trxId.length < 8) {
+            errorMsg.innerText = "Error: Please enter a valid TxID.";
+            errorMsg.style.display = 'block';
+            return;
+        }
+
+        btn.disabled = true;
+        btnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+
+        try {
+            const lockRef = doc(db, "used_transactions", trxId);
+            const lockSnap = await getDoc(lockRef);
+
+            if (lockSnap.exists()) {
+                errorMsg.innerText = "Error: This Transaction ID is already used!";
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btnText.innerText = "CONFIRM PAYMENT";
+                return;
+            }
+
+            const currentAmount = document.getElementById('displayAmount').innerText.replace('৳', '');
+            const currentMethod = document.getElementById('paymentMethodImg').src.includes('Nagad') ? 'Nagad' : 'bKash';
+
+            // ইউজারের ফোন নম্বর সংগ্রহের জন্য ইউজার ডকুমেন্ট লোড করা
+            const userSnap = await getDoc(doc(db, "users", userId));
+            const userData = userSnap.exists() ? userSnap.data() : {};
+            const userPhone = userData.phone || "N/A";
+            const referByCode = userData.referBy || "N/A";
+
+            // রিকোয়েস্টে অতিরিক্ত তথ্য (userPhone, adminNumber) যোগ করা হয়েছে
+            await addDoc(collection(db, "depositRequests"), {
+                userId: userId,
+                userPhone: userPhone,
+                adminNumber: adminNumber,
+                referBy: referByCode,
+                amount: Number(currentAmount),
+                method: currentMethod,
+                transactionId: trxId,
+                status: "pending",
+                submittedAt: serverTimestamp()
+            });
+
+            await setDoc(doc(db, "used_transactions", trxId), {
+                userId: userId,
+                usedAt: serverTimestamp()
+            });
+
+            loader.style.display = 'flex';
+            setTimeout(() => { window.location.replace("home.html"); }, 1500);
+
+        } catch (e) {
+            btn.disabled = false;
+            btnText.innerText = "CONFIRM PAYMENT";
+            alert("Error: " + e.message);
+        }
+    };
+</script>
+</body>
+</html>

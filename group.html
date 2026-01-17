@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="session.js"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Our Community - Live Links</title>
+    
+    <script>
+        // সেশন ফাইল লোড হওয়ার আগে দ্রুত লগইন চেক
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f4f7f6; display: flex; justify-content: center; overflow-x: hidden; }
+        
+        .container { width: 100%; max-width: 400px; background: #f4f7f6; min-height: 100vh; position: relative; padding-bottom: 30px; }
+
+        /* --- Loader Animation --- */
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+
+        .header { background-color: #00a651; color: white; padding: 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .header i { margin-right: 15px; cursor: pointer; }
+
+        .hero-section { text-align: center; padding: 30px 20px; background: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .hero-section i { font-size: 50px; color: #00a651; margin-bottom: 15px; }
+        .hero-section h2 { color: #333; font-size: 20px; }
+        .hero-section p { color: #777; font-size: 13px; margin-top: 5px; }
+
+        .links-container { padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        
+        .social-card {
+            background: white; display: flex; align-items: center; padding: 15px;
+            border-radius: 15px; text-decoration: none; color: #444;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #eee;
+            transition: 0.3s; pointer-events: none; opacity: 0.6; 
+        }
+        .social-card.active { pointer-events: auto; opacity: 1; }
+        .social-card:active { transform: scale(0.95); background: #f0fdf4; }
+        
+        .icon-circle { width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 20px; }
+        
+        .telegram { background: #e3f2fd; color: #0088cc; }
+        .facebook { background: #e7f3ff; color: #1877f2; }
+        .youtube  { background: #fff1f0; color: #ff0000; }
+
+        .link-text { flex-grow: 1; }
+        .link-text div { font-weight: bold; font-size: 15px; }
+        .link-text span { font-size: 11px; color: #999; }
+        .chevron { color: #ccc; font-size: 14px; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> <div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-chevron-left" onclick="goBack()"></i>
+        <div>Our Community</div>
+    </div>
+
+    <div class="hero-section">
+        <i class="fa-solid fa-users-viewfinder"></i>
+        <h2>Join Our Community</h2>
+        <p>Stay updated with our official links</p>
+    </div>
+
+    <div class="links-container">
+        <a id="tgLink" href="#" class="social-card" target="_blank">
+            <div class="icon-circle telegram"><i class="fa-brands fa-telegram"></i></div>
+            <div class="link-text">
+                <div>Telegram Group</div>
+                <span>Join for latest updates</span>
+            </div>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+        </a>
+
+        <a id="fbLink" href="#" class="social-card" target="_blank">
+            <div class="icon-circle facebook"><i class="fa-brands fa-facebook"></i></div>
+            <div class="link-text">
+                <div>Facebook Group</div>
+                <span>Connect with our members</span>
+            </div>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+        </a>
+
+        <a id="ytLink" href="#" class="social-card" target="_blank">
+            <div class="icon-circle youtube"><i class="fa-brands fa-youtube"></i></div>
+            <div class="link-text">
+                <div>YouTube Channel</div>
+                <span>Watch tutorials and guides</span>
+            </div>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+        </a>
+    </div>
+</div>
+
+<script>
+    function goBack() {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        setTimeout(() => { window.location.replace('home.html'); }, 800);
+    }
+
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            return false;
+        }
+    };
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+    authDomain: "test-54fa2.firebaseapp.com",
+    projectId: "test-54fa2",
+    appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Firestore রিয়েল-টাইম আপডেট লিসেনার
+  onSnapshot(doc(db, "settings", "links"), (docSnap) => {
+    if (docSnap.exists()) {
+      const links = docSnap.data();
+      
+      const setupLink = (id, url) => {
+          const el = document.getElementById(id);
+          if(url && url.trim() !== "") {
+              el.href = url;
+              el.classList.add('active');
+          } else {
+              el.classList.remove('active');
+          }
+      };
+
+      setupLink('tgLink', links.telegram);
+      setupLink('fbLink', links.facebook);
+      setupLink('ytLink', links.youtube);
+    }
+  });
+</script>
+
+</body>
+</html>

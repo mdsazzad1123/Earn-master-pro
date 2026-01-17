@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script src="session.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redeem Gift Code</title>
+    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-image: url('https://i.postimg.cc/BZr3jn2F/79b94cde2352f5d6099840bd0ce926a2.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
+            display: flex; justify-content: center; 
+        }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+
+        .container { width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.95); min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { background-color: #00a651; color: white; padding: 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; }
+        .header i { cursor: pointer; }
+
+        .content { padding: 30px 20px; text-align: center; }
+        .gift-icon { font-size: 60px; color: #00a651; margin-bottom: 20px; }
+        
+        h2 { margin: 0; color: #333; font-size: 22px; }
+        p { color: #666; font-size: 14px; margin-bottom: 30px; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group input { 
+            width: 100%; padding: 15px; border: 2px solid #eee; border-radius: 12px; 
+            box-sizing: border-box; font-size: 18px; text-align: center; 
+            text-transform: uppercase; font-weight: bold; letter-spacing: 2px;
+            outline: none; transition: 0.3s;
+        }
+        .input-group input:focus { border-color: #00a651; background: #f0fdf4; }
+
+        .btn-redeem { 
+            width: 100%; background: #00a651; color: white; border: none; 
+            padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; 
+            cursor: pointer; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,166,81,0.2);
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+
+        .notice { margin-top: 40px; background: #fff4e5; padding: 15px; border-radius: 10px; border-left: 4px solid #ff9800; text-align: left; }
+        .notice h4 { margin: 0 0 5px; font-size: 14px; color: #e67e22; }
+        .notice ul { margin: 0; padding-left: 20px; font-size: 12px; color: #666; }
+
+        #msg { margin-top: 15px; font-size: 14px; font-weight: bold; display: none; }
+
+        #celebration-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+            display: none; justify-content: center; align-items: center; z-index: 10000;
+        }
+        .celebration-box {
+            width: 85%; max-width: 320px;
+            background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://i.postimg.cc/yNv019Fg/fashionable-dust-particle-blue-background-with-bright-light-effect-1017-58602.jpg');
+            background-size: cover; background-position: center;
+            padding: 40px 20px; border-radius: 25px; border: 2px solid #00a651;
+            text-align: center; color: white; box-shadow: 0 0 30px rgba(0, 166, 81, 0.4);
+        }
+        .celebration-box i { font-size: 60px; color: #00a651; margin-bottom: 20px; }
+        .celebration-box h3 { font-size: 24px; margin-bottom: 10px; }
+        .reward-amount { font-size: 45px; font-weight: bold; color: #00a651; display: block; margin: 15px 0; }
+        .ok-btn { background: #00a651; color: white; border: none; padding: 12px 40px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> 
+
+<div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home.html')"></i>
+        <div style="flex-grow: 1; text-align: center;">Gift Code</div>
+        <i class="fa-solid fa-clock-rotate-left" onclick="navigateWithAnimation('reward_history.html')"></i>
+    </div>
+
+    <div class="content">
+        <div class="gift-icon"><i class="fa-solid fa-gift"></i></div>
+        <h2>Redeem Your Gift</h2>
+        <p>Enter your secret gift code below to claim your reward instantly.</p>
+
+        <div class="input-group">
+            <input type="text" id="giftCodeInput" placeholder="ENTER CODE HERE">
+        </div>
+
+        <button class="btn-redeem" id="redeemBtn" onclick="redeemGift()">
+            <span id="btnText">CLAIM REWARD</span>
+        </button>
+
+        <div id="msg"></div>
+
+        <div class="notice">
+            <h4>Terms & Conditions:</h4>
+            <ul>
+                <li>One user can use each code only once.</li>
+                <li>Make sure to type the code exactly as provided.</li>
+                <li>Rewards are added directly to your main balance.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div id="celebration-overlay">
+    <div id="celebrationBox" class="celebration-box animate__animated animate__zoomIn">
+        <i class="fas fa-gem"></i>
+        <h3>PREMIUM REWARD</h3>
+        <p>Congratulations! You've received</p>
+        <span class="reward-amount" id="celebrationAmount">৳00</span>
+        <button class="ok-btn" onclick="hideCelebration()">COLLECT</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, deleteDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+        authDomain: "test-54fa2.firebaseapp.com",
+        projectId: "test-54fa2",
+        appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const currentUserId = localStorage.getItem('currentUserId');
+    const userPhone = localStorage.getItem('userPhone');
+
+    window.navigateWithAnimation = (url) => {
+        document.getElementById('loader-overlay').style.display = 'flex';
+        setTimeout(() => { window.location.replace(url); }, 800);
+    };
+
+    window.showCelebration = (amount, bannerImg) => {
+        const celBox = document.getElementById('celebrationBox');
+        if(bannerImg) {
+            celBox.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bannerImg}')`;
+        }
+        document.getElementById('celebrationAmount').innerText = `৳${amount || 0}`;
+        document.getElementById('celebration-overlay').style.display = 'flex';
+    };
+
+    window.hideCelebration = () => {
+        document.getElementById('celebration-overlay').style.display = 'none';
+        location.reload(); 
+    };
+
+    window.redeemGift = async () => {
+        const codeInput = document.getElementById('giftCodeInput').value.trim().toUpperCase();
+        const btn = document.getElementById('redeemBtn');
+        const msgDiv = document.getElementById('msg');
+
+        if (!codeInput) { alert("Please enter a code!"); return; }
+        if (!currentUserId) { alert("User session expired. Please login again."); return; }
+
+        btn.disabled = true;
+        document.getElementById('btnText').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
+
+        try {
+            // ১. হিস্টোরি চেক (আগে ব্যবহার করেছেন কি না)
+            const historyRef = collection(db, "reward_history");
+            const q = query(historyRef, where("userId", "==", currentUserId), where("code", "==", codeInput));
+            const historySnap = await getDocs(q);
+            if (!historySnap.empty) throw new Error("You have already used this gift code!");
+
+            // ২. কোড তথ্য সংগ্রহ
+            const giftRef = doc(db, "gift_codes", codeInput);
+            const giftSnap = await getDoc(giftRef);
+            if (!giftSnap.exists()) throw new Error("Invalid or Expired Gift Code!");
+
+            const data = giftSnap.data();
+            
+            // ৩. রিওয়ার্ড ক্যালকুলেশন
+            let finalReward = 0;
+            const dbAmount = parseFloat(data.amount) || 0;
+            const dbBudget = parseFloat(data.remainingBudget) || 0;
+
+            if (data.type === 'one_time' || data.type === 'private') {
+                finalReward = dbAmount;
+                if (data.type === 'private') {
+                    const fixPhone = (p) => String(p).replace(/\D/g, '').slice(-10);
+                    if (fixPhone(data.targetUser) !== fixPhone(userPhone)) {
+                        throw new Error("This is a private code, not for you!");
+                    }
+                }
+            } else {
+                const randomPick = Math.floor(Math.random() * 10) + 1;
+                finalReward = Math.min(randomPick, dbBudget);
+            }
+
+            if (finalReward <= 0) {
+                await deleteDoc(giftRef);
+                throw new Error("Reward budget is finished!");
+            }
+
+            // ৪. ব্যালেন্স আপডেট (The Fix: setDoc with merge)
+            const userRef = doc(db, "users", currentUserId);
+            await setDoc(userRef, { 
+                balance: increment(finalReward) 
+            }, { merge: true });
+
+            // ৫. কোড ম্যানেজমেন্ট (ডিলিট বা বাজেট কমানো)
+            if (data.type === 'one_time' || data.type === 'private') {
+                await deleteDoc(giftRef);
+            } else {
+                if (dbBudget - finalReward <= 0) await deleteDoc(giftRef);
+                else await updateDoc(giftRef, { remainingBudget: increment(-finalReward) });
+            }
+
+            // ৬. হিস্টোরি সেভ
+            await addDoc(collection(db, "reward_history"), {
+                userId: currentUserId,
+                code: codeInput,
+                amount: finalReward,
+                date: serverTimestamp()
+            });
+
+            msgDiv.style.display = "none";
+            document.getElementById('giftCodeInput').value = "";
+            showCelebration(finalReward, data.bannerImg);
+
+        } catch (error) {
+            msgDiv.style.color = "#f44336";
+            msgDiv.innerText = error.message;
+            msgDiv.style.display = "block";
+            console.error("Redeem Error:", error);
+        } finally {
+            btn.disabled = false;
+            document.getElementById('btnText').innerText = "CLAIM REWARD";
+        }
+    };
+</script>
+</body>
+</html>

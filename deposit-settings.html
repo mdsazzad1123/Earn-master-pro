@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deposit Settings | Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* বেসিক সেটআপ */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7fa; color: #333; }
+
+        /* হেডার */
+        .header {
+            background: #fff; height: 55px; display: flex; align-items: center;
+            padding: 0 15px; box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .back-btn {
+            text-decoration: none; color: #333; font-size: 14px; font-weight: 600;
+            background: #eee; padding: 6px 12px; border-radius: 8px;
+        }
+        .header-title { margin-left: auto; font-size: 15px; font-weight: bold; color: #00a651; }
+
+        /* কন্টেইনার */
+        .container { padding: 20px; max-width: 450px; margin: 0 auto; }
+        .card { 
+            background: #fff; padding: 25px; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+        h2 { font-size: 18px; margin-bottom: 20px; color: #444; border-left: 4px solid #00a651; padding-left: 10px; }
+
+        /* ইনপুট গ্রুপ */
+        .input-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: #666; }
+        input {
+            width: 100%; padding: 14px; border: 1px solid #ddd; border-radius: 12px;
+            font-size: 16px; outline: none; transition: 0.3s; background: #f9f9f9;
+        }
+        input:focus { border-color: #00a651; background: #fff; box-shadow: 0 0 8px rgba(0,166,81,0.1); }
+
+        /* সেভ বাটন */
+        .save-btn {
+            width: 100%; padding: 16px; background: #00a651; color: white;
+            border: none; border-radius: 12px; font-weight: bold; font-size: 16px;
+            cursor: pointer; transition: 0.3s; box-shadow: 0 6px 15px rgba(0,166,81,0.2);
+        }
+        .save-btn:active { transform: scale(0.97); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="admin.html" class="back-btn">Back</a>
+        <div class="header-title">Deposit Config</div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h2><i class="fas fa-cog"></i> Deposit Settings</h2>
+            
+            <div class="input-group">
+                <label>Minimum Deposit Amount (৳)</label>
+                <input type="number" id="min-deposit" placeholder="Ex: 300">
+            </div>
+
+            <button class="save-btn" onclick="saveSettings()">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+            authDomain: "test-54fa2.firebaseapp.com",
+            projectId: "test-54fa2",
+            appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // বর্তমান সেটিংস লোড করা
+        async function loadSettings() {
+            try {
+                const docRef = doc(db, "settings", "app_settings");
+                const docSnap = await getDoc(docRef);
+                
+                if (docSnap.exists()) {
+                    document.getElementById('min-deposit').value = docSnap.data().min_deposit || "";
+                }
+            } catch (e) {
+                console.error("Error loading settings:", e);
+            }
+        }
+
+        // সেটিংস সেভ করা
+        window.saveSettings = async () => {
+            const minAmount = document.getElementById('min-deposit').value;
+            const btn = document.querySelector('.save-btn');
+
+            if(!minAmount) return alert("Please enter amount!");
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            try {
+                await setDoc(doc(db, "settings", "app_settings"), {
+                    min_deposit: parseInt(minAmount)
+                }, { merge: true });
+
+                alert("Settings Updated Successfully!");
+            } catch (e) {
+                alert("Error: " + e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Save Settings';
+            }
+        };
+
+        loadSettings();
+    </script>
+</body>
+</html>

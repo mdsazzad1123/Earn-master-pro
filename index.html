@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnMaster Pro - Smooth Intro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            /* Smooth Animated Background */
+            background: linear-gradient(-45deg, #f4f7f6, #e8f5e9, #f1f8e9, #ffffff);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .content-wrapper {
+            text-align: center;
+            z-index: 10;
+        }
+
+        /* Logo Animation - Soft Reveal Effect */
+        .logo-circle {
+            width: 115px;
+            height: 115px;
+            background: #fff;
+            border-radius: 35px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 15px 45px rgba(0, 166, 81, 0.15);
+            filter: blur(8px);
+            opacity: 0;
+            transform: scale(0.85);
+            animation: softReveal 1.2s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+        }
+
+        .logo-circle img {
+            width: 75px;
+            z-index: 2;
+        }
+
+        /* Logo Ripple Effect */
+        .logo-circle::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(0, 166, 81, 0.2);
+            border-radius: 35px;
+            animation: ripple 2.5s ease-out infinite;
+        }
+
+        @keyframes softReveal {
+            to { filter: blur(0); opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Text Animation */
+        .brand-text {
+            margin-top: 35px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            letter-spacing: 10px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: textFocus 1.8s ease-out forwards 0.5s;
+        }
+
+        .line {
+            width: 0;
+            height: 3px;
+            background: #00a651;
+            margin: 12px auto;
+            border-radius: 10px;
+            animation: expandLine 1.2s ease-in-out forwards 1.3s;
+        }
+
+        @keyframes textFocus {
+            to { letter-spacing: 4px; opacity: 1; }
+        }
+
+        @keyframes expandLine {
+            to { width: 50px; }
+        }
+
+        .loading-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 15px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeIn 1s forwards 2s;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <div class="logo-circle">
+            <img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" alt="Logo">
+        </div>
+        
+        <h1 class="brand-text">EarnMaster</h1>
+        <div class="line"></div>
+        <p class="loading-text">Smart Investment</p>
+    </div>
+
+    <script>
+        // Automatic Redirect Script
+        // 3.8 seconds (3800ms) por login.html open hobe
+        setTimeout(function() {
+            window.location.href = "login.html";
+        }, 3800); 
+    </script>
+</body>
+</html>

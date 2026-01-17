@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <script src="session.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>User Profile - Compact Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* আপনার সিএসএস কোড আগের মতোই থাকছে... */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { background-color: #f8f9fa; display: flex; justify-content: center; overflow-x: hidden; }
+        .container { width: 100%; max-width: 400px; background: white; min-height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 30px; }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+
+        .header { background-color: #00a651; color: white; padding: 12px 15px; display: flex; align-items: center; font-size: 17px; font-weight: bold; position: sticky; top: 0; z-index: 100; }
+        .header i { margin-right: 15px; cursor: pointer; }
+        .profile-section { position: relative; background: #fff; text-align: center; padding-bottom: 5px; }
+        .cover-box { background: #00a651; height: 100px; width: 100%; clip-path: polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%); position: absolute; top: 0; left: 0; }
+        .profile-content { position: relative; padding-top: 45px; z-index: 1; }
+        .logo-circle { width: 85px; height: 85px; background: white; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; border: 3px solid #fff; position: relative; overflow: hidden; cursor: pointer; }
+        #profileImg { width: 100%; height: 100%; object-fit: cover; }
+        .user-name { font-weight: bold; margin-top: 8px; font-size: 20px; color: #333; }
+        .user-phone { color: #666; font-size: 13px; margin-top: 2px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .balance-wrapper { padding: 10px 20px; display: flex; justify-content: flex-start; }
+        .mini-balance-box { background: white; border-left: 4px solid #00a651; padding: 8px 15px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; flex-direction: column; min-width: 140px; }
+        .mini-balance-box .amount-wrap { font-size: 18px; font-weight: 800; color: #00a651; margin-top: 1px; }
+        .service-action-container { display: flex; gap: 10px; padding: 10px 15px; }
+        .action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 10px; border: 1px solid #eee; background: #fff; font-size: 14px; font-weight: 600; color: #444; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+        .services-title { padding: 8px 20px; border-left: 4px solid #00a651; margin: 5px 0 8px 0; font-weight: bold; color: #444; background: #f9f9f9; font-size: 14px; }
+        .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px; }
+        .service-item { background: white; border: 1px solid #f0f0f0; border-radius: 12px; padding: 15px 5px; text-align: center; font-size: 12px; color: #444; cursor: pointer; }
+        .service-item i { font-size: 22px; color: #00a651; margin-bottom: 6px; display: block; }
+        .logout { background-color: #fff5f5; color: #ff4d4d; border-color: #ffebeb; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> <div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header">
+        <i class="fa-solid fa-arrow-left" onclick="navigateTo('home.html')"></i>
+        <div style="flex-grow: 1; text-align: center; margin-right: 30px;">Profile</div>
+    </div>
+
+    <div class="profile-section">
+        <div class="cover-box"></div>
+        <div class="profile-content">
+            <div class="logo-circle" onclick="document.getElementById('fileInput').click()">
+                <img id="profileImg" src="https://i.postimg.cc/KvG0G8YD/boy-profile-photo-cartoon-11152300-png-sw800.png">
+            </div>
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+            <div class="user-name" id="userNameDisplay">Loading...</div>
+            <div class="user-phone">
+                <i class="fa-solid fa-phone-volume" style="font-size: 11px; color: #00a651;"></i>
+                <span id="userPhoneDisplay">01XXXXXXX</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="balance-wrapper">
+        <div class="mini-balance-box">
+            <span style="font-size: 10px; color: #888;">Total Balance</span>
+            <div class="amount-wrap">
+                <span style="font-size: 14px;">৳</span><span id="mainBalanceDisplay">0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="service-action-container">
+        <div class="action-btn" onclick="navigateTo('personal.html')"><i class="fa-solid fa-user-gear"></i> Personal</div>
+        <div class="action-btn" onclick="navigateTo('group.html')"><i class="fa-solid fa-users-rectangle"></i> In-Group</div>
+    </div>
+
+    <div class="services-title">My Service</div>
+
+    <div class="services-grid">
+        <div class="service-item" onclick="navigateTo('withdraw.html')"><i class="fa-solid fa-credit-card"></i>Withdraw</div>
+        <div class="service-item" onclick="navigateTo('history.html')"><i class="fa-solid fa-clock-rotate-left"></i>History</div>
+        <div class="service-item" onclick="navigateTo('about.html')"><i class="fa-solid fa-circle-info"></i>About</div>
+        <div class="service-item" onclick="navigateTo('password.html')"><i class="fa-solid fa-key"></i>Password</div>
+        <div class="service-item" onclick="navigateTo('service.html')"><i class="fa-solid fa-headset"></i>Service</div>
+        <div class="service-item" onclick="navigateTo('app.html')"><i class="fa-solid fa-download"></i>App</div>
+        <div class="service-item logout" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket" id="logoutIcon"></i>Logout</div>
+    </div>
+</div>
+
+<script>
+    document.onkeydown = function(e) {
+        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) || (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0))) {
+            return false;
+        }
+    };
+</script>
+
+<script type="text/javascript">
+    const fileInput = document.getElementById('fileInput');
+    const profileImg = document.getElementById('profileImg');
+
+    const savedImage = localStorage.getItem('userProfilePic');
+    if (savedImage) profileImg.src = savedImage;
+
+    fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64Image = event.target.result;
+                profileImg.src = base64Image;
+                localStorage.setItem('userProfilePic', base64Image);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    window.navigateTo = (url) => {
+        document.getElementById('loader-overlay').style.display = 'flex'; 
+        setTimeout(() => { window.location.href = url; }, 800); 
+    };
+
+    // ৩. নতুন সিকিউর লগআউট ফাংশন
+    function handleLogout() {
+        if(confirm("আপনি কি লগআউট করতে চান?")) {
+            document.getElementById('logoutIcon').classList.add('fa-spin');
+            localStorage.clear();
+            sessionStorage.clear();
+            setTimeout(() => { window.location.replace('login.html'); }, 1000);
+        }
+    }
+</script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+    authDomain: "test-54fa2.firebaseapp.com",
+    projectId: "test-54fa2",
+    appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const userId = localStorage.getItem('currentUserId');
+  
+  if (userId) {
+      onSnapshot(doc(db, "users", userId), (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById('userNameDisplay').innerText = data.name || "User";
+          document.getElementById('userPhoneDisplay').innerText = data.phone || "No Number";
+          document.getElementById('mainBalanceDisplay').innerText = parseFloat(data.balance || 0).toFixed(2);
+        }
+      });
+  } else { window.location.replace('login.html'); }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <script src="session.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HedgeTrade | Investment Status</title>
+    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f4f7f6; color: #333; -webkit-user-select: none; }
+
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .proc-9 { 
+            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
+        }
+        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .proc-9::before { 
+            content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
+            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+        }
+        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
+
+        .header { background-color: #00c853; color: white; padding: 15px; display: flex; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .header i { font-size: 20px; cursor: pointer; margin-right: 15px; }
+        .header h3 { font-size: 18px; flex-grow: 1; text-align: center; margin-right: 35px; }
+
+        .summary-card { background: linear-gradient(135deg, #00c853, #008e3a); color: white; padding: 25px 20px; margin: 15px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,200,83,0.3); }
+        .summary-card span { font-size: 13px; opacity: 0.9; }
+        .summary-card h2 { margin-top: 5px; font-size: 28px; }
+
+        .tab-container { display: flex; margin: 10px 15px; background: #eee; border-radius: 10px; padding: 4px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; background: transparent; color: #777; transition: 0.3s; }
+        .tab-btn.active { background: white; color: #00c853; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+        .order-list { padding: 15px; padding-bottom: 100px; }
+        .order-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #eee; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; }
+        .pkg-icon { width: 45px; height: 45px; background: #e8f5e9; border-radius: 12px; display: flex; justify-content: center; align-items: center; color: #00c853; font-size: 20px; }
+        
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; background: #fcfcfc; padding: 12px; border-radius: 10px; gap: 10px; border: 1px solid #f0f0f0; }
+        .stat-item span { font-size: 11px; color: #999; text-transform: uppercase; display: block; }
+        .stat-item b { font-size: 13px; color: #333; }
+        .timer-highlight { color: #ff9800 !important; }
+
+        .claim-btn { width: 100%; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 12px; transition: 0.3s; font-size: 14px; }
+        .btn-waiting { background: #f1f1f1; color: #888; cursor: not-allowed; border: 1px dashed #ccc; }
+        .btn-ready { background: #00c853; color: white; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: pulse 1.5s infinite; }
+        .btn-completed { background: #e8f5e9; color: #00c853; cursor: default; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.02); } 100% { transform: scale(1); } }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.08); border-top-left-radius: 25px; border-top-right-radius: 25px; }
+        .nav-item { text-align: center; color: #ccc; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
+        .nav-item.active { color: #00c853; }
+        .nav-item i { font-size: 24px; display: block; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<div id="loader-overlay">
+    <div class="loader-container">
+        <div class="proc-9"><img src="https://i.postimg.cc/DZsMDGyR/images-(8).png" class="loader-img"></div>
+        <span class="proc-3">Processing</span>
+    </div>
+</div>
+
+<div class="header">
+    <i class="fa-solid fa-arrow-left" onclick="navigateTo('home.html')"></i>
+    <h3>Investment Orders</h3>
+</div>
+
+<div class="summary-card">
+    <span id="summary-label">Total Locked Capital</span>
+    <h2 id="totalAmount">৳ 0.00</h2>
+</div>
+
+<div class="tab-container">
+    <button id="active-tab-btn" class="tab-btn active" onclick="switchTab('active')">Active</button>
+    <button id="history-tab-btn" class="tab-btn" onclick="switchTab('completed')">History</button>
+</div>
+
+<div class="order-list" id="orderContainer"></div>
+
+<nav class="bottom-nav">
+    <div class="nav-item" onclick="navigateTo('home.html')"><i class="fas fa-home"></i>Home</div>
+    <div class="nav-item active" onclick="navigateTo('order.html')"><i class="fas fa-tasks"></i>Order</div>
+    <div class="nav-item" onclick="navigateTo('share.html')"><i class="fas fa-users"></i>Team</div>
+    <div class="nav-item" onclick="navigateTo('profile.html')"><i class="fas fa-user-circle"></i>Mine</div>
+</nav>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, collection, query, where, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
+        authDomain: "test-54fa2.firebaseapp.com",
+        projectId: "test-54fa2",
+        appId: "1:496937911936:web:5f48c8712f58f2e26fc865"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- লগইন নিরাপত্তা চেক ---
+    const userId = localStorage.getItem('currentUserId');
+    if (!userId) {
+        window.location.href = 'login.html';
+    }
+    // ------------------------
+
+    let currentTab = 'active';
+
+    window.navigateTo = (url) => {
+        document.getElementById('loader-overlay').style.display = 'flex'; 
+        setTimeout(() => { window.location.href = url; }, 1000); 
+    };
+
+    window.switchTab = (tab) => {
+        if (currentTab === tab) return;
+        const loader = document.getElementById('loader-overlay');
+        loader.style.display = 'flex';
+
+        setTimeout(() => {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            if(tab === 'active') {
+                document.getElementById('active-tab-btn').classList.add('active');
+                document.getElementById('summary-label').innerText = "Total Locked Capital";
+            } else {
+                document.getElementById('history-tab-btn').classList.add('active');
+                document.getElementById('summary-label').innerText = "Total History Earning";
+            }
+            loadOrders();
+            loader.style.display = 'none';
+        }, 800);
+    };
+
+    async function loadOrders() {
+        const container = document.getElementById('orderContainer');
+        const q = query(collection(db, "orders"), where("userId", "==", userId), where("status", "==", currentTab));
+        const snap = await getDocs(q);
+        
+        container.innerHTML = "";
+        let totalSum = 0;
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const id = docSnap.id;
+            
+            const totalReturn = parseFloat(data.price || 0) + parseFloat(data.dailyProfit || 0);
+
+            if(currentTab === 'active') {
+                totalSum += parseFloat(data.price || 0);
+            } else {
+                totalSum += totalReturn;
+            }
+
+            let actionBtn = '';
+            let countdownHtml = '';
+
+            if(currentTab === 'active') {
+                const purchaseTime = data.purchaseDate.toMillis();
+                const expiryTime = purchaseTime + (parseInt(data.cycle) * 24 * 60 * 60 * 1000);
+                const timeLeft = expiryTime - Date.now();
+                
+                countdownHtml = `<b id="timer-${id}" class="timer-highlight">--:--:--</b>`;
+                actionBtn = `<button id="btn-${id}" class="claim-btn btn-waiting" onclick="claimInvestment('${id}', ${totalReturn})">LOCKED</button>`;
+                runCountdown(timeLeft, id);
+            } else {
+                countdownHtml = `<b style="color: #00c853;">Claimed ✓</b>`;
+                actionBtn = `<button class="claim-btn btn-completed" disabled>COMPLETED</button>`;
+            }
+
+            container.insertAdjacentHTML('beforeend', `
+                <div class="order-card">
+                    <div class="card-top">
+                        <div class="pkg-icon"><i class="fas fa-chart-line"></i></div>
+                        <div><b>${data.packageName}</b><span>${data.cycle} Days Duration</span></div>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-item"><span>Capital</span><b>৳ ${parseFloat(data.price).toFixed(2)}</b></div>
+                        <div class="stat-item"><span>Net Return</span><b>৳ ${totalReturn.toFixed(2)}</b></div>
+                        <div class="stat-item"><span>Countdown</span>${countdownHtml}</div>
+                        <div class="stat-item"><span>Status</span><b>${currentTab.toUpperCase()}</b></div>
+                    </div>
+                    ${actionBtn}
+                </div>
+            `);
+        });
+        document.getElementById('totalAmount').innerText = "৳ " + totalSum.toFixed(2);
+    }
+
+    function runCountdown(ms, id) {
+        const interval = setInterval(() => {
+            const timer = document.getElementById(`timer-${id}`);
+            const btn = document.getElementById(`btn-${id}`);
+            if (!timer) { clearInterval(interval); return; }
+
+            if (ms <= 0) {
+                clearInterval(interval);
+                timer.innerHTML = "00d 00h 00m 00s";
+                btn.innerHTML = "CLAIM FULL RETURN";
+                btn.className = "claim-btn btn-ready";
+                btn.disabled = false;
+            } else {
+                const d = Math.floor(ms / 86400000);
+                const h = Math.floor((ms % 86400000) / 3600000);
+                const m = Math.floor((ms % 3600000) / 60000);
+                const s = Math.floor((ms % 60000) / 1000);
+                timer.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+                btn.disabled = true;
+                ms -= 1000;
+            }
+        }, 1000);
+    }
+
+    window.claimInvestment = async (id, totalReturn) => {
+        const btn = document.getElementById(`btn-${id}`);
+        if(btn.disabled) return;
+        btn.disabled = true;
+        btn.innerText = "Processing...";
+        try {
+            await updateDoc(doc(db, "users", userId), { balance: increment(totalReturn) });
+            await updateDoc(doc(db, "orders", id), { status: "completed" });
+            alert("Congratulations! ৳" + totalReturn.toFixed(2) + " added to balance.");
+            loadOrders();
+        } catch (e) { alert("Error: " + e.message); btn.disabled = false; }
+    };
+
+    loadOrders();
+</script>
+</body>
+</html>
