@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -6,6 +6,12 @@
     <meta http-equiv="Expires" content="0">
 
     <script src="session.js"></script>
+    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            window.location.replace('login.html');
+        }
+    </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,22 +31,23 @@
             backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: #fff; width: 100%; max-width: 320px; border-radius: 25px;
+            background: #fff; width: 100%; max-width: 260px; border-radius: 20px;
             position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .modal-header {
             background: linear-gradient(135deg, #00c853, #00e676); color: white;
-            padding: 20px; text-align: center; position: relative;
+            padding: 8px 12px; text-align: center; position: relative;
         }
-        .modal-header i { font-size: 35px; margin-bottom: 8px; display: block; }
-        .modal-header span { font-size: 16px; font-weight: 800; letter-spacing: 1px; display: block; }
+        .modal-header i { font-size: 18px; margin-bottom: 2px; display: block; }
+        .modal-header span { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; display: block; }
         .close-modal {
-            position: absolute; right: 12px; top: 12px; background: rgba(255, 255, 255, 0.3);
-            color: white; border: none; width: 28px; height: 28px; border-radius: 50%;
-            cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s;
+            position: absolute; right: 8px; top: 6px; background: rgba(255, 255, 255, 0.3);
+            color: white; border: none; width: 20px; height: 20px; border-radius: 50%;
+            cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center;
         }
-        .modal-body { padding: 25px; font-size: 14px; line-height: 1.6; color: #444; text-align: center; }
+        .modal-body { padding: 20px; font-size: 13px; line-height: 1.5; color: #444; text-align: center; }
         @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
         /* --- লোডার এনিমেশন --- */
@@ -168,7 +175,8 @@
         const userId = localStorage.getItem('currentUserId');
         const loader = document.getElementById('loader-overlay');
 
-        // --- নোটিশ লজিক ---
+        loader.style.display = 'flex';
+
         async function fetchNotice() {
             try {
                 const docSnap = await getDoc(doc(db, "settings", "app_config"));
@@ -188,7 +196,6 @@
             setTimeout(() => { window.location.href = url; }, 800); 
         };
 
-        // রিয়েলটাইম ব্যালেন্স আপডেট
         if (userId) {
             onSnapshot(doc(db, "users", userId), (docSnap) => {
                 if (docSnap.exists()) {
@@ -197,7 +204,6 @@
             });
         }
 
-        // টাইমার লজিক
         let timerInterval;
         const startGlobalTimer = (remainingSeconds) => {
             clearInterval(timerInterval);
@@ -217,50 +223,51 @@
             timerInterval = setInterval(updateUI, 1000);
         };
 
-        // প্যাকেজ লোড এবং বাই বাটন ফিক্স
         const fetchPackages = async () => {
-            const querySnapshot = await getDocs(collection(db, "packages"));
-            const container = document.getElementById('package-container');
-            container.innerHTML = '';
-            
-            querySnapshot.forEach((docSnap) => {
-                const item = docSnap.data();
-                const price = parseFloat(item.price || 0);
-                const profit = parseFloat(item.profit || 0);
-                const cycle = Math.round(parseFloat(item.cycle || 0));
+            try {
+                const querySnapshot = await getDocs(collection(db, "packages"));
+                const container = document.getElementById('package-container');
+                container.innerHTML = '';
                 
-                const cardHtml = `
-                    <div class="card">
-                        <img src="${item.image}" class="card-img">
-                        <div class="card-content">
-                            <p class="card-title">${item.name}</p>
-                            <div class="card-info">Price-<span>৳ ${price}</span></div>
-                            <div class="card-info">Profit-<span>৳ ${profit}</span></div>
-                            <div class="card-info">Day-<span>${cycle} day</span></div>
-                            <div class="card-info">Total-<span>৳ ${price + profit}</span></div>
-                            <button class="buy-btn" data-id="${docSnap.id}" data-price="${price}" data-profit="${profit}" data-cycle="${cycle}" data-name="${item.name}">Buy Now</button>
-                        </div>
-                    </div>`;
-                container.insertAdjacentHTML('beforeend', cardHtml);
-            });
+                querySnapshot.forEach((docSnap) => {
+                    const item = docSnap.data();
+                    const price = parseFloat(item.price || 0);
+                    const profit = parseFloat(item.profit || 0);
+                    const cycle = Math.round(parseFloat(item.cycle || 0));
+                    
+                    const cardHtml = `
+                        <div class="card">
+                            <img src="${item.image}" class="card-img">
+                            <div class="card-content">
+                                <p class="card-title">${item.name}</p>
+                                <div class="card-info">Price-<span>৳ ${price}</span></div>
+                                <div class="card-info">Profit-<span>৳ ${profit}</span></div>
+                                <div class="card-info">Day-<span>${cycle} day</span></div>
+                                <div class="card-info">Total-<span>৳ ${price + profit}</span></div>
+                                <button class="buy-btn" data-id="${docSnap.id}" data-price="${price}" data-profit="${profit}" data-cycle="${cycle}" data-name="${item.name}">Buy Now</button>
+                            </div>
+                        </div>`;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
 
-            // বাটনে ক্লিক ইভেন্ট সেট করা (ফিক্সড)
-            document.querySelectorAll('.buy-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const d = btn.dataset;
-                    buyPackage(d.id, parseFloat(d.price), parseFloat(d.profit), parseInt(d.cycle), d.name);
-                };
-            });
+                document.querySelectorAll('.buy-btn').forEach(btn => {
+                    btn.onclick = () => {
+                        const d = btn.dataset;
+                        buyPackage(d.id, parseFloat(d.price), parseFloat(d.profit), parseInt(d.cycle), d.name);
+                    };
+                });
 
-            const expiry = localStorage.getItem('buyTimerExpiry');
-            if (expiry) {
-                const diff = Math.floor((expiry - Date.now()) / 1000);
-                if (diff > 0) startGlobalTimer(diff);
+                const expiry = localStorage.getItem('buyTimerExpiry');
+                if (expiry) {
+                    const diff = Math.floor((expiry - Date.now()) / 1000);
+                    if (diff > 0) startGlobalTimer(diff);
+                }
+            } finally {
+                loader.style.display = 'none';
             }
         };
         fetchPackages();
 
-        // বাই প্যাকেজ ফাংশন (অ্যানিমেশনসহ)
         window.buyPackage = async (id, price, profit, cycle, name) => {
             if (localStorage.getItem('buyTimerExpiry')) return;
             if (!userId) { alert("Please login first"); return; }
