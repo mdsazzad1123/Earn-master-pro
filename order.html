@@ -186,7 +186,8 @@
                 const timeLeft = expiryTime - Date.now();
                 
                 countdownHtml = `<b id="timer-${id}" class="timer-highlight">--:--:--</b>`;
-                actionBtn = `<button id="btn-${id}" class="claim-btn btn-waiting" onclick="claimInvestment('${id}', ${totalReturn})">LOCKED</button>`;
+                // বাটনটি শুরুতে disabled রাখা হয়েছে যাতে সময় শেষ হওয়ার আগে ক্লিক না করা যায়
+                actionBtn = `<button id="btn-${id}" class="claim-btn btn-waiting" onclick="claimInvestment('${id}', ${totalReturn})" disabled>LOCKED</button>`;
                 runCountdown(timeLeft, id);
             } else {
                 countdownHtml = `<b style="color: #00c853;">Claimed ✓</b>`;
@@ -230,6 +231,7 @@
                 const m = Math.floor((ms % 3600000) / 60000);
                 const s = Math.floor((ms % 60000) / 1000);
                 timer.innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+                // এখানে নিশ্চিত করা হয়েছে যে সময় বাকি থাকলে বাটন সবসময় disabled থাকবে
                 btn.disabled = true;
                 ms -= 1000;
             }
@@ -238,7 +240,8 @@
 
     window.claimInvestment = async (id, totalReturn) => {
         const btn = document.getElementById(`btn-${id}`);
-        if(btn.disabled) return;
+        // এখানে সার্ভার সাইড সিকিউরিটি হিসেবে পুনরায় চেক করা হয়েছে
+        if(btn.disabled || btn.innerText === "LOCKED") return;
         btn.disabled = true;
         btn.innerText = "Processing...";
         try {
