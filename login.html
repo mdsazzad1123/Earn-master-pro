@@ -3,7 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - EarnMaster Pro</title>
+    
+    <title>Login - EarnMaster Pro | Invest & Earn Daily</title>
+    <meta name="description" content="HedgeTrade-এ স্বাগতম! বিশ্বের শীর্ষস্থানীয় কোম্পানিগুলোর শেয়ারে বিনিয়োগ করে প্রতিদিন নিশ্চিত মুনাফা আয় করার সবচেয়ে সহজ ও নিরাপদ প্ল্যাটফর্ম। আজই যোগ দিন।">
+    <meta name="keywords" content="EarnMaster Pro, HedgeTrade, Login, Investment, Share Market, Online Income, Earn Money">
+    <meta name="author" content="EarnMaster Pro Team">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="Login - EarnMaster Pro | Invest & Earn Daily">
+    <meta property="og:description" content="Start your investment journey today with EarnMaster Pro and grow your wealth.">
+    <meta property="og:image" content="https://i.postimg.cc/DZsMDGyR/images-(8).png">
 
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -99,7 +108,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ১. অ্যাডমিন প্যানেল থেকে সেশন টাইম নিয়ে এসে চেক করার ফাংশন
     async function checkExistingSession() {
         const currentUserId = localStorage.getItem('currentUserId');
         const lastActivity = localStorage.getItem('lastActivity');
@@ -173,7 +181,6 @@
 
             await signInAnonymously(auth);
 
-            // সেশন শুরু
             localStorage.setItem('currentUserId', userDoc.id);
             localStorage.setItem('lastActivity', Date.now()); 
 
