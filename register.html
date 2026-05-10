@@ -33,6 +33,9 @@
         }
         .input-group i.input-icon { position: absolute; left: 12px; top: 35px; color: #00a651; }
         
+        /* Readonly ইনপুট ফিল্ডের জন্য হালকা কালার */
+        .input-group input:read-only { background-color: #f9f9f9; color: #888; cursor: not-allowed; }
+
         .err-msg { color: #f44336; font-size: 10px; margin-top: 4px; display: none; }
 
         .btn-register { 
@@ -48,7 +51,6 @@
         .footer-links { text-align: center; margin-top: 20px; font-size: 14px; color: #666; }
         .footer-links a { color: #00a651; text-decoration: none; font-weight: bold; cursor: pointer; }
 
-        /* --- সিগনেচার এনিমেশন লোডার --- */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(5px);
@@ -142,19 +144,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- ৫ মিনিট সেশন টাইমআউট চেক ---
-    const SESSION_TIMEOUT = 5 * 60 * 1000; // ৫ মিনিট মিলিসেকেন্ডে
-    const lastActivity = localStorage.getItem('lastActivity');
-    const currentUserId = localStorage.getItem('currentUserId');
-
-    if (currentUserId && lastActivity) {
-        if (Date.now() - lastActivity > SESSION_TIMEOUT) {
-            localStorage.clear();
-            window.location.replace('login.html');
-        } else {
-            window.location.replace('home.html');
+    // --- ইউআরএল থেকে রেফার কোড চেক করার অংশ (সাজ্জাদ, এটা নতুন যোগ করা হয়েছে) ---
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const referFromUrl = urlParams.get('ref');
+        const referInput = document.getElementById('refer');
+        
+        if (referFromUrl) {
+            referInput.value = referFromUrl;
+            referInput.setAttribute('readonly', true); // মুছতে পারবে না
         }
-    }
+    });
 
     function generateUniqueReferCode() {
         const chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -241,7 +241,7 @@
 
             const myNewReferCode = generateUniqueReferCode();
 
-            const docRef = await addDoc(collection(db, "users"), {
+            await addDoc(collection(db, "users"), {
                 name, 
                 email, 
                 phone, 
@@ -249,14 +249,13 @@
                 referBy: refer || "direct",
                 myReferCode: myNewReferCode,
                 balance: 0,
-                status: "pending", 
+                pendingCommission: 0, // কমিশনের জন্য ফিল্ড যোগ করা হলো
+                totalMonthlyEarn: 0,
+                status: "pending",
                 joinedAt: Timestamp.now()
             });
             
-            // সেশন ডাটা সেভ
-            localStorage.setItem('currentUserId', docRef.id);
             localStorage.setItem('myReferCode', myNewReferCode);
-            localStorage.setItem('lastActivity', Date.now());
             
             btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Registration Success';
             btn.style.backgroundColor = "#2e7d32";
@@ -264,7 +263,7 @@
             setTimeout(() => {
                 document.getElementById('loader-overlay').style.display = 'flex';
                 setTimeout(() => {
-                    window.location.href = 'home.html';
+                    window.location.href = 'login.html';
                 }, 1500);
             }, 1000);
 
