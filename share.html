@@ -14,7 +14,6 @@
             display: flex; justify-content: center; overflow: hidden;
         }
 
-        /* --- সিগনেচার এনিমেশন লোডার --- */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
@@ -41,7 +40,6 @@
             display: flex; flex-direction: column;
         }
         
-        /* Fixed Top Content Area */
         .fixed-top-content { flex-shrink: 0; }
 
         .header { background-color: #00a651; color: white; padding: 18px; display: flex; align-items: center; font-size: 18px; font-weight: bold; }
@@ -70,14 +68,24 @@
         .stat-item div { font-size: 20px; font-weight: bold; color: #00a651; }
         .stat-item span { font-size: 11px; color: #777; font-weight: 500; }
 
-        .code-box { background: #f9fbf9; margin: 0 20px; padding: 18px; border-radius: 15px; border: 2px dashed #00a651; text-align: center; position: relative; }
+        .code-box { background: #f9fbf9; margin: 0 20px; padding: 15px; border-radius: 15px; border: 2px dashed #00a651; text-align: center; position: relative; }
         .code-box label { font-size: 11px; color: #666; display: block; margin-bottom: 8px; font-weight: bold; }
-        .my-code { font-size: 24px; font-weight: 800; color: #333; letter-spacing: 3px; }
-        .copy-icon { position: absolute; right: 15px; top: 35px; color: #00a651; cursor: pointer; font-size: 18px; }
+        
+        /* রেফার লিংক বক্সের স্টাইল */
+        .link-container {
+            background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 10px;
+            font-size: 12px; color: #555; word-break: break-all; margin-bottom: 10px;
+            display: block; text-align: left; line-height: 1.4;
+        }
+
+        .copy-btn-inner {
+            background: #00a651; color: white; border: none; padding: 8px 20px;
+            border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer;
+            transition: 0.3s; width: 100%;
+        }
 
         .invite-btn { background: #00a651; color: white; margin: 20px; padding: 16px; border-radius: 15px; text-align: center; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-decoration: none; box-shadow: 0 5px 15px rgba(0,166,81,0.2); }
 
-        /* Scrollable List Section */
         .list-section { padding: 0 20px; flex-grow: 1; overflow-y: auto; padding-bottom: 30px; }
         .list-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px; border-left: 4px solid #00a651; padding-left: 10px; position: sticky; top: 0; background: rgba(255,255,255,0.96); z-index: 5; padding-top: 5px; }
         .referral-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
@@ -129,9 +137,11 @@
         </div>
 
         <div class="code-box">
-            <label>YOUR REFER CODE</label>
-            <span class="my-code" id="myReferCode">---</span>
-            <i class="fa-regular fa-copy copy-icon" onclick="copyCode()"></i>
+            <label>YOUR REFERRAL LINK</label>
+            <div class="link-container" id="displayReferLink">Generating link...</div>
+            <button class="copy-btn-inner" id="copyBtn" onclick="copyFullLink()">
+                <i class="fa-regular fa-copy"></i> COPY LINK
+            </button>
         </div>
 
         <div class="invite-btn" onclick="shareLink()">
@@ -181,16 +191,17 @@
             const userSnap = await getDoc(doc(db, "users", currentUserId));
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-                document.getElementById('myReferCode').innerText = userData.myReferCode || "N/A";
+                const myCode = userData.myReferCode || "N/A";
                 
-                const mHistory = userData.totalMonthlyEarn || 0;
-                const pComm = userData.pendingCommission || 0;
+                // লিংকের বক্স আপডেট
+                const fullUrl = `${window.location.origin}/Register.html?ref=${myCode}`;
+                document.getElementById('displayReferLink').innerText = fullUrl;
 
-                document.getElementById('monthlyBonus').innerText = "৳ " + mHistory.toFixed(2);
-                document.getElementById('commissionEarn').innerText = "৳ " + pComm.toFixed(2);
-                document.getElementById('claimCommBtn').disabled = pComm <= 0;
+                document.getElementById('monthlyBonus').innerText = "৳ " + (userData.totalMonthlyEarn || 0).toFixed(2);
+                document.getElementById('commissionEarn').innerText = "৳ " + (userData.pendingCommission || 0).toFixed(2);
+                document.getElementById('claimCommBtn').disabled = (userData.pendingCommission || 0) <= 0;
 
-                const q = query(collection(db, "users"), where("referBy", "==", userData.myReferCode));
+                const q = query(collection(db, "users"), where("referBy", "==", myCode));
                 const querySnapshot = await getDocs(q);
                 
                 const listContainer = document.getElementById('referralList');
@@ -203,18 +214,9 @@
                         const data = doc.data();
                         inviteCount++;
                         if(data.status === "active") activeCount++;
-
                         const item = document.createElement('div');
                         item.className = 'referral-item';
-                        item.innerHTML = `
-                            <div class="user-info">
-                                <b>${data.name || 'Investor'}</b>
-                                <span>${data.phone ? data.phone.substring(0,5)+'***' : 'Unknown'}</span>
-                            </div>
-                            <span class="status-badge ${data.status === "active" ? 'tag-active' : 'tag-pending'}">
-                                ${data.status === "active" ? 'ACTIVE' : 'PENDING'}
-                            </span>
-                        `;
+                        item.innerHTML = `<div class="user-info"><b>${data.name || 'Investor'}</b><span>${data.phone ? data.phone.substring(0,5)+'***' : 'Unknown'}</span></div><span class="status-badge ${data.status === "active" ? 'tag-active' : 'tag-pending'}">${data.status === "active" ? 'ACTIVE' : 'PENDING'}</span>`;
                         listContainer.appendChild(item);
                     });
                 }
@@ -224,70 +226,46 @@
         } catch (e) { console.error(e); }
     }
 
+    window.copyFullLink = () => {
+        const link = document.getElementById('displayReferLink').innerText;
+        const btn = document.getElementById('copyBtn');
+        
+        navigator.clipboard.writeText(link).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> COPIED!';
+            btn.style.backgroundColor = "#27ae60";
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.style.backgroundColor = "#00a651";
+            }, 2000);
+        });
+    };
+
+    window.shareLink = async () => {
+        const link = document.getElementById('displayReferLink').innerText;
+        if (navigator.share) {
+            navigator.share({ title: 'EarnMaster Pro', text: 'Join now and earn commission!', url: link });
+        } else {
+            window.copyFullLink();
+        }
+    };
+
     window.claimCommission = async () => {
         const btn = document.getElementById('claimCommBtn');
         const originalText = btn.innerHTML;
-        
         btn.disabled = true;
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-        
         try {
             const userRef = doc(db, "users", currentUserId);
             const userSnap = await getDoc(userRef);
             const amount = userSnap.data().pendingCommission || 0;
-
             if(amount > 0) {
-                await updateDoc(userRef, {
-                    balance: increment(amount),
-                    pendingCommission: 0,
-                    totalMonthlyEarn: increment(amount)
-                });
-                
+                await updateDoc(userRef, { balance: increment(amount), pendingCommission: 0, totalMonthlyEarn: increment(amount) });
                 btn.innerHTML = '<i class="fa-solid fa-check"></i> Success';
-                btn.style.backgroundColor = "#fff";
-                btn.style.color = "#27ae60";
-                
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.style.backgroundColor = "";
-                    btn.style.color = "";
-                    loadData();
-                }, 2000);
+                setTimeout(() => { btn.innerHTML = originalText; loadData(); }, 2000);
             }
-        } catch (e) {
-            btn.innerHTML = 'Error';
-            btn.disabled = false;
-            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
-        }
-    };
-
-    window.copyCode = () => {
-        const code = document.getElementById('myReferCode').innerText;
-        navigator.clipboard.writeText(code);
-        alert("Refer code copied: " + code);
-    };
-
-    window.shareLink = async () => {
-        const code = document.getElementById('myReferCode').innerText;
-        let commVal = 0;
-        
-        const settingsSnap = await getDoc(doc(db, "settings", "commissions"));
-        if (settingsSnap.exists()) commVal = settingsSnap.data().depositComm || 0;
-
-        // সাজ্জাদ, এখানে ডোমেইন লিংকের সাথে রেফার কোড যোগ করা হয়েছে
-        const shareUrl = `${window.location.origin}/Register.html?ref=${code}`;
-        const shareText = `Join EarnMaster Pro using my link and earn ${commVal}% deposit commission!`;
-
-        if (navigator.share) {
-            navigator.share({ 
-                title: 'EarnMaster Pro', 
-                text: shareText, 
-                url: shareUrl 
-            });
-        } else {
-            navigator.clipboard.writeText(shareUrl);
-            alert("Referral link copied to clipboard:\n" + shareUrl);
-        }
+        } catch (e) { btn.disabled = false; btn.innerHTML = originalText; }
     };
 
     loadData();
