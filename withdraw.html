@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="session.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Withdrawal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script>
-        // ইউজার লগইন চেক
         if (!localStorage.getItem('currentUserId')) {
-            window.location.replace('login.html');
+            window.location.href = '/login';
         }
     </script>
     <style>
@@ -21,7 +19,6 @@
             display: flex; justify-content: center; 
         }
 
-        /* --- অ্যানিমেশন লোডার স্টাইল --- */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
@@ -76,7 +73,11 @@
         .error-msg { color: #ff4d4d; font-size: 11px; margin-top: 5px; display: none; }
 
         .btn-submit { width: 100%; background: #00a651; color: white; border: none; padding: 15px; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
-        .btn-submit:disabled { background: #ccc; }
+        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+
+        @media (max-width: 480px) {
+            .container { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -90,7 +91,7 @@
 
 <div class="container" id="mainContainer">
     <div class="header">
-        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('profile.html')"></i>
+        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('/profile')"></i>
         <div style="flex-grow: 1; text-align: center; margin-right: 30px;">Withdraw</div>
     </div>
 
@@ -113,7 +114,7 @@
         </div>
 
         <div class="notice-box" id="noticeBox">
-            <b>নির্দেশনা:</b> টাকা উত্তোলনের জন্য সঠিক নম্বর দিন। মিনিমাম উইথড্র ৩০০ টাকা।
+            <b>নির্দেশনা:</b> টাকা উত্তোলনের জন্য সঠিক নম্বর দিন। লোড হচ্ছে...
         </div>
 
         <div class="input-group">
@@ -135,7 +136,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, serverTimestamp, query, where, getDocs, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, addDoc, updateDoc, serverTimestamp, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
@@ -191,7 +192,7 @@
                         <i class="fa-solid fa-circle-xmark" style="font-size:60px; color:#e74c3c;"></i>
                         <h3 style="margin-top:20px;">Withdrawal Closed</h3>
                         <p style="color:#666; font-size:14px; margin-top:10px;">${subText}</p>
-                        <button onclick="navigateWithAnimation('home.html')" style="margin-top:20px; padding:12px 25px; background:#00a651; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 10px rgba(0,166,81,0.2);">
+                        <button onclick="navigateWithAnimation('/home')" style="margin-top:20px; padding:12px 25px; background:#00a651; color:white; border:none; border-radius:12px; font-weight:bold; cursor:pointer;">
                             <i class="fa-solid fa-house"></i> Back Home
                         </button>
                     </div>`;
@@ -214,10 +215,14 @@
     window.validateWithdraw = () => {
         const amount = Number(document.getElementById('withdrawAmount').value);
         const errorDiv = document.getElementById('withdrawError');
+        const btn = document.getElementById('withdrawBtn');
+        
         if (amount > 0 && (amount < minWithdraw || amount > maxWithdraw || amount > currentBalance)) {
             errorDiv.style.display = 'block';
+            btn.disabled = true;
         } else {
             errorDiv.style.display = 'none';
+            btn.disabled = false;
         }
     };
 
@@ -235,11 +240,11 @@
         btnText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
 
         try {
-            // ২. সিকিউরিটি এবং রিকোয়েস্ট লজিক (Daily Limit Check)
-            const today = new Date();
-            today.setHours(0,0,0,0);
             const q = query(collection(db, "withdraw_requests"), where("userId", "==", userId));
             const querySnapshot = await getDocs(q);
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
             
             let countToday = 0;
             querySnapshot.forEach(doc => {
@@ -256,18 +261,19 @@
                 return;
             }
 
-            // ব্যালেন্স কাটা এবং ডাটাবেসে রিকোয়েস্ট পাঠানো
-            await updateDoc(doc(db, "users", userId), { balance: increment(-amount) });
+            const newBalance = currentBalance - amount;
+            await updateDoc(doc(db, "users", userId), { balance: newBalance });
+            
             await addDoc(collection(db, "withdraw_requests"), {
-                userId: userId,
-                amount: amount,
-                accountNumber: number,
+                userId, 
+                amount, 
+                accountNumber: number, 
                 method: selectedMethod,
-                status: "submitted",
+                status: "submitted", 
                 submittedAt: serverTimestamp()
             });
 
-            navigateWithAnimation("history.html");
+            navigateWithAnimation("/history");
 
         } catch (error) {
             console.error(error);
