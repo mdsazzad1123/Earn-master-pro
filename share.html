@@ -71,7 +71,6 @@
         .code-box { background: #f9fbf9; margin: 0 20px; padding: 15px; border-radius: 15px; border: 2px dashed #00a651; text-align: center; position: relative; }
         .code-box label { font-size: 11px; color: #666; display: block; margin-bottom: 8px; font-weight: bold; }
         
-        /* রেফার লিংক বক্সের স্টাইল */
         .link-container {
             background: #fff; border: 1px solid #ddd; padding: 10px; border-radius: 10px;
             font-size: 12px; color: #555; word-break: break-all; margin-bottom: 10px;
@@ -108,7 +107,7 @@
 <div class="container">
     <div class="fixed-top-content">
         <div class="header">
-            <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home.html')"></i>
+            <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home')"></i>
             <div style="flex-grow: 1; text-align: center; margin-right: 35px;">Refer & Earn</div>
         </div>
 
@@ -173,9 +172,10 @@
     const currentUserId = localStorage.getItem('currentUserId');
     const overlay = document.getElementById('loader-overlay');
 
-    window.navigateWithAnimation = (url) => {
+    window.navigateWithAnimation = (page) => {
         overlay.style.display = 'flex';
-        setTimeout(() => { window.location.href = url; }, 800);
+        // এখানে .html বাদ দিয়ে পাঠানো হয়েছে
+        setTimeout(() => { window.location.href = '/' + page; }, 800);
     };
 
     async function loadData() {
@@ -193,8 +193,8 @@
                 const userData = userSnap.data();
                 const myCode = userData.myReferCode || "N/A";
                 
-                // লিংকের বক্স আপডেট
-                const fullUrl = `${window.location.origin}/Register.html?ref=${myCode}`;
+                // লিংকের বক্স আপডেট - এখানেও Register.html থেকে .html সরিয়ে দিয়েছি
+                const fullUrl = `${window.location.origin}/Register?ref=${myCode}`;
                 document.getElementById('displayReferLink').innerText = fullUrl;
 
                 document.getElementById('monthlyBonus').innerText = "৳ " + (userData.totalMonthlyEarn || 0).toFixed(2);
