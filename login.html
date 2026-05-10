@@ -17,11 +17,6 @@
             background: #ffffff; min-height: 100vh; position: relative; 
             box-shadow: 0 0 15px rgba(0,0,0,0.05); 
         }
-        /* ব্যাকগ্রাউন্ড ব্লার করার জন্য মেইন কন্টেইনার */
-        .main-content.blur {
-            filter: blur(5px);
-            pointer-events: none;
-        }
         .login-header {
             background-color: #00a651; color: white; padding: 40px 20px;
             text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
@@ -43,7 +38,7 @@
             width: 100%; background: #00a651; color: white; border: none; 
             padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; 
             cursor: pointer; transition: 0.3s; margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(0,166,81,0.2);
+            box-shadow: 0 4px 12px rgba(0,166,81,0.25);
             display: flex; justify-content: center; align-items: center; gap: 10px;
         }
         .btn-login:active { transform: scale(0.98); }
@@ -89,29 +84,6 @@
             cursor: pointer; z-index: 1000; transition: 0.3s;
         }
         .support-fab:active { transform: scale(0.9); }
-
-        /* --- Session Timeout Popup Style --- */
-        #timeout-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.4); 
-            display: none; justify-content: center; align-items: center; z-index: 10000;
-        }
-        .timeout-card {
-            width: 280px; background: white; padding: 25px; border-radius: 20px;
-            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: popUp 0.3s ease-out;
-        }
-        @keyframes popUp {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .timeout-card i { font-size: 40px; color: #f44336; margin-bottom: 15px; }
-        .timeout-card h3 { margin: 0 0 10px; font-size: 18px; color: #333; }
-        .timeout-card p { font-size: 13px; color: #666; margin-bottom: 20px; line-height: 1.5; }
-        .btn-refresh {
-            background: #00a651; color: white; border: none; padding: 10px 25px;
-            border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -123,52 +95,40 @@
     </div>
 </div>
 
-<!-- Session Timeout Modal -->
-<div id="timeout-modal">
-    <div class="timeout-card">
-        <i class="fa-solid fa-clock-rotate-left"></i>
-        <h3>Session Timeout</h3>
-        <p>Your session has expired. Please refresh the page to continue.</p>
-        <button class="btn-refresh" onclick="location.reload()">Refresh Now</button>
+<div class="container">
+    <div class="login-header">
+        <i class="fa-solid fa-circle-user"></i>
+        <h2>Welcome Back</h2>
+        <p style="font-size: 12px; opacity: 0.9;">Login to manage your investments</p>
     </div>
-</div>
 
-<div class="container" id="main-container">
-    <div class="main-content" id="content-wrapper">
-        <div class="login-header">
-            <i class="fa-solid fa-circle-user"></i>
-            <h2>Welcome Back</h2>
-            <p style="font-size: 12px; opacity: 0.9;">Login to manage your investments</p>
+    <div class="form-section">
+        <div id="msg"></div>
+
+        <div class="input-group">
+            <label>Phone Number</label>
+            <i class="fa-solid fa-phone input-icon"></i>
+            <input type="tel" id="phone" placeholder="017XXXXXXXX">
         </div>
 
-        <div class="form-section">
-            <div id="msg"></div>
+        <div class="input-group">
+            <label>Password</label>
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="password" placeholder="Enter password">
+            <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePass()"></i>
+        </div>
 
-            <div class="input-group">
-                <label>Phone Number</label>
-                <i class="fa-solid fa-phone input-icon"></i>
-                <input type="tel" id="phone" placeholder="017XXXXXXXX">
-            </div>
+        <div class="forget-btn">
+            <a onclick="navigateTo('forget')">Forgot Password?</a>
+        </div>
 
-            <div class="input-group">
-                <label>Password</label>
-                <i class="fa-solid fa-lock input-icon"></i>
-                <input type="password" id="password" placeholder="Enter password">
-                <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePass()"></i>
-            </div>
+        <button class="btn-login" id="loginBtn" onclick="handleLogin()">
+            <span id="btnText">LOGIN</span>
+            <div id="btnLoader" class="btn-spin"></div>
+        </button>
 
-            <div class="forget-btn">
-                <a onclick="navigateTo('forget.html')">Forgot Password?</a>
-            </div>
-
-            <button class="btn-login" id="loginBtn" onclick="handleLogin()">
-                <span id="btnText">LOGIN</span>
-                <div id="btnLoader" class="btn-spin"></div>
-            </button>
-
-            <div class="footer-links">
-                Don't have an account? <a onclick="navigateTo('Register.html')">Sign Up</a>
-            </div>
+        <div class="footer-links">
+            Don't have an account? <a onclick="navigateTo('Register')">Sign Up</a>
         </div>
     </div>
 </div>
@@ -194,32 +154,6 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Session Timeout Logic (সাজ্জাদ, এখানে টাইম আউট ফাংশনটি দেওয়া হলো)
-    let idleTime = 0;
-    const maxIdleTime = 5; // ৫ মিনিট পর টাইম আউট হবে (তুমি চাইলে সময় বাড়িয়ে নিতে পারো)
-
-    function resetTimer() {
-        idleTime = 0;
-    }
-
-    // মাউস নড়াচড়া বা কিবোর্ড ব্যবহারে টাইমার রিসেট হবে
-    window.onmousemove = resetTimer;
-    window.onkeypress = resetTimer;
-    window.ontouchstart = resetTimer;
-
-    setInterval(() => {
-        idleTime++;
-        if (idleTime >= maxIdleTime) {
-            showTimeoutPopup();
-        }
-    }, 60000); // প্রতি ১ মিনিটে চেক করবে
-
-    function showTimeoutPopup() {
-        document.getElementById('timeout-modal').style.display = 'flex';
-        document.getElementById('content-wrapper').classList.add('blur');
-    }
-
-    // Support Function
     window.contactSupport = async () => {
         try {
             const docRef = doc(db, "settings", "links");
@@ -234,7 +168,8 @@
 
     window.navigateTo = (page) => {
         document.getElementById('loader-overlay').style.display = 'flex';
-        setTimeout(() => { window.location.href = page; }, 800);
+        // এখানে পেজের নামের আগে / দেওয়া হয়েছে যাতে এটি সঠিক পাথ ধরে
+        setTimeout(() => { window.location.href = '/' + page; }, 800);
     };
 
     window.togglePass = () => {
@@ -299,7 +234,8 @@
             btn.style.background = "#2e7d32";
             
             overlay.style.display = 'flex';
-            setTimeout(() => { window.location.href = 'home.html'; }, 1500);
+            // হোম পেজে যাওয়ার সময় .html বাদ দেওয়া হয়েছে
+            setTimeout(() => { window.location.href = '/home'; }, 1500);
 
         } catch (error) {
             showError(error.message);
