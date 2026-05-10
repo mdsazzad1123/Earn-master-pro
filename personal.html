@@ -1,24 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <script src="session.js"></script>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Personal Details - Premium</title>
-    
-    <script>
-        // সেশন চেক
-        if (!localStorage.getItem('currentUserId')) {
-            window.location.replace('login.html');
-        }
-    </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
-        body { background-color: #f4f7f6; display: flex; justify-content: center; overflow-x: hidden; -webkit-user-select: none; }
+        body { background-color: #f4f7f6; display: flex; justify-content: center; overflow-x: hidden; }
         
         .container { width: 100%; max-width: 400px; background: #f4f7f6; min-height: 100vh; padding-bottom: 30px; position: relative; }
 
@@ -39,9 +28,11 @@
             border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
         }
         .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
 
-        /* Header */
+        /* Header Style */
         .header { 
             background: #00a651; color: white; padding: 18px 15px; 
             display: flex; align-items: center; font-size: 18px; 
@@ -95,7 +86,7 @@
         .balance-value { color: #00a651 !important; font-size: 18px !important; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <div id="loader-overlay">
     <div class="loader-container">
@@ -106,7 +97,7 @@
 
 <div class="container">
     <div class="header">
-        <i class="fa-solid fa-chevron-left" onclick="goBack()"></i>
+        <i class="fa-solid fa-chevron-left" onclick="goBackWithLoader()"></i>
         <div>Personal Information</div>
     </div>
 
@@ -134,7 +125,7 @@
                 <div class="icon-box"><i class="fa-solid fa-phone"></i></div>
                 <div class="text-box">
                     <span class="label">Phone Number</span>
-                    <span class="value" id="resPhone">...</span>
+                    <span class="value" id="resPhone">01XXXXXXXXX</span>
                 </div>
             </div>
 
@@ -142,7 +133,7 @@
                 <div class="icon-box"><i class="fa-solid fa-envelope"></i></div>
                 <div class="text-box">
                     <span class="label">Email Address</span>
-                    <span class="value" id="resEmail">...</span>
+                    <span class="value" id="resEmail">example@mail.com</span>
                 </div>
             </div>
 
@@ -158,7 +149,7 @@
                 <div class="icon-box"><i class="fa-solid fa-fingerprint"></i></div>
                 <div class="text-box">
                     <span class="label">User Unique ID</span>
-                    <span class="value" id="resId">#ID-...</span>
+                    <span class="value" id="resId">#ID-000000</span>
                 </div>
             </div>
         </div>
@@ -166,15 +157,14 @@
 </div>
 
 <script>
-    function goBack() {
+    // .html এক্সটেনশন ছাড়া ন্যাভিগেশন লজিক
+    function goBackWithLoader() {
         document.getElementById('loader-overlay').style.display = 'flex';
-        setTimeout(() => { window.location.replace('profile.html'); }, 800);
+        setTimeout(() => {
+            // প্রোফাইল পেজে ফিরে যাওয়ার জন্য এক্সটেনশন ছাড়া পাথ ব্যবহার করা হয়েছে
+            window.location.href = 'profile'; 
+        }, 1000);
     }
-    
-    // ইনস্পেক্ট এলিমেন্ট ব্লক
-    document.onkeydown = (e) => {
-        if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
-    };
 </script>
 
 <script type="module">
@@ -192,26 +182,23 @@
   const db = getFirestore(app);
   const userId = localStorage.getItem('currentUserId');
   
-  // প্রোফাইল পিকচার সিঙ্ক
   const savedImg = localStorage.getItem('userProfilePic');
   if(savedImg) document.getElementById('displayImg').src = savedImg;
 
   if (userId) {
-      // রিয়েল টাইম ডাটা লিসেনার
       onSnapshot(doc(db, "users", userId), (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           document.getElementById('resName').innerText = data.name || "User Name";
           document.getElementById('resPhone').innerText = data.phone || "No Phone";
           document.getElementById('resEmail').innerText = data.email || "No Email Provided";
-          document.getElementById('resBalance').innerText = parseFloat(data.balance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
+          document.getElementById('resBalance').innerText = parseFloat(data.balance || 0).toFixed(2);
           document.getElementById('resId').innerText = "#" + userId.substring(0, 8).toUpperCase();
-        } else {
-            // যদি ইউজার ডাটাবেজে না থাকে তবে লগআউট
-            localStorage.clear();
-            window.location.replace('login.html');
         }
       });
+  } else {
+      // লগইন না থাকলে ইনডেক্স পেজে পাঠিয়ে দিবে (এক্সটেনশন ছাড়া)
+      window.location.href = 'index';
   }
 </script>
 
