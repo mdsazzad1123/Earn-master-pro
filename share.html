@@ -1,33 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script src="session.js"></script>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Refer & Earn | HedgeTrade</title>
-    
-    <script>
-        // সেশন চেক
-        if (!localStorage.getItem('currentUserId')) {
-            window.location.replace('login.html');
-        }
-    </script>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refer & Earn - EarnMaster Pro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', 'Segoe UI', sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
-            background-color: #f4f7f6;
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background-image: url('https://i.postimg.cc/BZr3jn2F/79b94cde2352f5d6099840bd0ce926a2.jpg');
+            background-size: cover; background-position: center; background-attachment: fixed;
             display: flex; justify-content: center; overflow: hidden;
-            -webkit-user-select: none;
         }
 
-        /* --- Loader Animation --- */
+        /* --- সিগনেচার এনিমেশন লোডার --- */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(5px);
             display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
         .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
@@ -41,60 +31,64 @@
             border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
         }
         .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
 
         .container { 
-            width: 100%; max-width: 400px; background: #f4f7f6; 
-            height: 100vh; position: relative;
+            width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.96); 
+            height: 100vh; position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.1); 
             display: flex; flex-direction: column;
         }
         
-        .header { background-color: #00a651; color: white; padding: 18px 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; flex-shrink: 0; }
+        /* Fixed Top Content Area */
+        .fixed-top-content { flex-shrink: 0; }
+
+        .header { background-color: #00a651; color: white; padding: 18px; display: flex; align-items: center; font-size: 18px; font-weight: bold; }
         .header i { margin-right: 15px; cursor: pointer; font-size: 20px; }
 
-        /* Reward Section */
-        .reward-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; background: #00a651; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; margin-bottom: 20px; }
+        .reward-section { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
         .reward-box-mini { 
-            background: rgba(255,255,255,0.15); backdrop-filter: blur(10px);
-            color: white; padding: 15px 10px; border-radius: 20px; text-align: center; 
-            border: 1px solid rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, #00a651, #008148); 
+            color: white; padding: 18px 10px; border-radius: 18px; text-align: center; 
+            box-shadow: 0 6px 15px rgba(0,166,81,0.25);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        .reward-box-mini p { font-size: 10px; text-transform: uppercase; opacity: 0.9; margin-bottom: 5px; }
-        .reward-box-mini h3 { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+        .reward-box-mini p { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; margin-bottom: 5px; }
+        .reward-box-mini h3 { font-size: 18px; font-weight: 800; margin-bottom: 10px; }
 
         .btn-claim-mini { 
-            background: #ffffff; color: #00a651; border: none; padding: 6px 15px; 
-            border-radius: 12px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.3s;
+            background: #ffffff; color: #00a651; border: none; padding: 5px 15px; 
+            border-radius: 30px; font-size: 10px; font-weight: bold; cursor: pointer; 
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1); transition: 0.2s; min-width: 70px;
         }
-        .btn-claim-mini:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-claim-mini:active { transform: scale(0.9); }
+        .btn-claim-mini:disabled { background: rgba(255,255,255,0.5); color: #666; cursor: not-allowed; }
 
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
-        .stat-item { background: white; padding: 15px; border-radius: 18px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid #fff; }
-        .stat-item div { font-size: 22px; font-weight: 800; color: #00a651; }
-        .stat-item span { font-size: 11px; color: #999; font-weight: 600; }
+        .stat-item { background: white; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #f0f0f0; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .stat-item div { font-size: 20px; font-weight: bold; color: #00a651; }
+        .stat-item span { font-size: 11px; color: #777; font-weight: 500; }
 
-        .code-box { background: white; margin: 0 20px; padding: 20px; border-radius: 20px; border: 2px dashed #00a651; text-align: center; position: relative; }
-        .code-box label { font-size: 11px; color: #999; display: block; margin-bottom: 10px; font-weight: bold; }
+        .code-box { background: #f9fbf9; margin: 0 20px; padding: 18px; border-radius: 15px; border: 2px dashed #00a651; text-align: center; position: relative; }
+        .code-box label { font-size: 11px; color: #666; display: block; margin-bottom: 8px; font-weight: bold; }
         .my-code { font-size: 24px; font-weight: 800; color: #333; letter-spacing: 3px; }
-        .copy-icon { position: absolute; right: 20px; bottom: 20px; color: #00a651; cursor: pointer; font-size: 20px; }
+        .copy-icon { position: absolute; right: 15px; top: 35px; color: #00a651; cursor: pointer; font-size: 18px; }
 
-        .invite-btn { background: #00a651; color: white; margin: 20px; padding: 16px; border-radius: 15px; text-align: center; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 5px 15px rgba(0,166,81,0.2); transition: 0.3s; }
-        .invite-btn:active { transform: scale(0.97); }
+        .invite-btn { background: #00a651; color: white; margin: 20px; padding: 16px; border-radius: 15px; text-align: center; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; text-decoration: none; box-shadow: 0 5px 15px rgba(0,166,81,0.2); }
 
-        /* List Section */
+        /* Scrollable List Section */
         .list-section { padding: 0 20px; flex-grow: 1; overflow-y: auto; padding-bottom: 30px; }
-        .list-title { font-size: 15px; font-weight: bold; color: #333; margin-bottom: 15px; border-left: 4px solid #00a651; padding-left: 10px; position: sticky; top: 0; background: #f4f7f6; z-index: 5; padding-top: 5px; }
-        
-        .referral-item { background: white; padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .list-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 15px; border-left: 4px solid #00a651; padding-left: 10px; position: sticky; top: 0; background: rgba(255,255,255,0.96); z-index: 5; padding-top: 5px; }
+        .referral-item { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
         .user-info b { font-size: 14px; color: #333; display: block; }
-        .user-info span { font-size: 11px; color: #999; }
-        
-        .status-badge { font-size: 10px; font-weight: 800; padding: 5px 10px; border-radius: 8px; }
+        .user-info span { font-size: 11px; color: #888; }
+        .status-badge { font-size: 10px; font-weight: bold; padding: 4px 10px; border-radius: 6px; }
         .tag-active { background: #e8f5e9; color: #2e7d32; }
         .tag-pending { background: #fff3e0; color: #ef6c00; }
     </style>
 </head>
-<body oncontextmenu="return false;">
+<body>
 
 <div id="loader-overlay">
     <div class="loader-container">
@@ -104,66 +98,58 @@
 </div>
 
 <div class="container">
-    <div class="header">
-        <i class="fa-solid fa-chevron-left" onclick="goBack()"></i>
-        <div style="flex-grow: 1; text-align: center; margin-right: 35px;">Refer & Earn</div>
-    </div>
-
-    <div class="reward-section">
-        <div class="reward-box-mini">
-            <p>Total Bonus</p>
-            <h3 id="monthlyBonus">৳ 0.00</h3>
-            <span style="font-size: 9px; opacity: 0.7;">Lifetime Earned</span>
+    <div class="fixed-top-content">
+        <div class="header">
+            <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home.html')"></i>
+            <div style="flex-grow: 1; text-align: center; margin-right: 35px;">Refer & Earn</div>
         </div>
-        <div class="reward-box-mini">
-            <p id="commLabel">Commission (0%)</p>
-            <h3 id="commissionEarn">৳ 0.00</h3>
-            <button class="btn-claim-mini" id="claimCommBtn" onclick="claimCommission()">CLAIM</button>
-        </div>
-    </div>
 
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div id="totalInvites">0</div>
-            <span>Total Joins</span>
+        <div class="reward-section">
+            <div class="reward-box-mini">
+                <p>Monthly History</p>
+                <h3 id="monthlyBonus">৳ 0.00</h3>
+                <span style="font-size: 9px; opacity: 0.8;">Last 30 Days Earned</span>
+            </div>
+            <div class="reward-box-mini">
+                <p id="commLabel">Commission (0%)</p>
+                <h3 id="commissionEarn">৳ 0.00</h3>
+                <button class="btn-claim-mini" id="claimCommBtn" onclick="claimCommission()">CLAIM</button>
+            </div>
         </div>
-        <div class="stat-item">
-            <div id="activeInvites">0</div>
-            <span>Active Investors</span>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div id="totalInvites">0</div>
+                <span>Total Invites</span>
+            </div>
+            <div class="stat-item">
+                <div id="activeInvites">0</div>
+                <span>Active Users</span>
+            </div>
         </div>
-    </div>
 
-    <div class="code-box">
-        <label>YOUR REFERRAL CODE</label>
-        <span class="my-code" id="myReferCode">---</span>
-        <i class="fa-regular fa-copy copy-icon" onclick="copyCode()"></i>
-    </div>
+        <div class="code-box">
+            <label>YOUR REFER CODE</label>
+            <span class="my-code" id="myReferCode">---</span>
+            <i class="fa-regular fa-copy copy-icon" onclick="copyCode()"></i>
+        </div>
 
-    <div class="invite-btn" onclick="shareLink()">
-        <i class="fa-solid fa-share-nodes"></i> INVITE FRIENDS
+        <div class="invite-btn" onclick="shareLink()">
+            <i class="fa-solid fa-share-nodes"></i> INVITE FRIENDS
+        </div>
     </div>
 
     <div class="list-section">
-        <div class="list-title">Referral Network</div>
+        <div class="list-title">My Referrals</div>
         <div id="referralList">
-            <p style="text-align:center; color:#bbb; font-size:12px; margin-top: 30px;">Loading network...</p>
+            <p style="text-align:center; color:#999; font-size:13px; margin-top: 20px;">No referrals found.</p>
         </div>
     </div>
 </div>
 
-
-
-<script>
-    function goBack() {
-        document.getElementById('loader-overlay').style.display = 'flex';
-        setTimeout(() => { window.location.replace('home.html'); }, 600);
-    }
-    document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
-</script>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, increment, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, collection, query, where, getDocs, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
@@ -175,95 +161,136 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const currentUserId = localStorage.getItem('currentUserId');
+    const overlay = document.getElementById('loader-overlay');
 
-    async function initReferralPage() {
+    window.navigateWithAnimation = (url) => {
+        overlay.style.display = 'flex';
+        setTimeout(() => { window.location.href = url; }, 800);
+    };
+
+    async function loadData() {
         if(!currentUserId) return;
         
-        // অ্যাডমিন কমিশন রেট সিঙ্ক
-        onSnapshot(doc(db, "settings", "commissions"), (s) => {
-            if(s.exists()) document.getElementById('commLabel').innerText = `Commission (${s.data().depositComm || 0}%)`;
-        });
-
-        // ইউজার ডাটা লিসেনার
-        onSnapshot(doc(db, "users", currentUserId), (snap) => {
-            if (snap.exists()) {
-                const data = snap.data();
-                document.getElementById('myReferCode').innerText = data.myReferCode || "CODE ERROR";
-                document.getElementById('monthlyBonus').innerText = "৳ " + (data.totalReferEarn || 0).toFixed(2);
-                document.getElementById('commissionEarn').innerText = "৳ " + (data.pendingCommission || 0).toFixed(2);
-                document.getElementById('claimCommBtn').disabled = (data.pendingCommission || 0) < 1;
-                
-                loadReferralList(data.myReferCode);
+        try {
+            const settingsSnap = await getDoc(doc(db, "settings", "commissions"));
+            if (settingsSnap.exists()) {
+                const commVal = settingsSnap.data().depositComm || 0;
+                document.getElementById('commLabel').innerText = `Commission (${commVal}%)`;
             }
-        });
-    }
 
-    async function loadReferralList(code) {
-        const q = query(collection(db, "users"), where("referBy", "==", code));
-        const snap = await getDocs(q);
-        const listContainer = document.getElementById('referralList');
-        let activeCount = 0;
-        
-        listContainer.innerHTML = snap.empty ? '<p style="text-align:center; color:#bbb; font-size:12px; margin-top: 30px;">No friends joined yet.</p>' : "";
-        
-        snap.forEach(doc => {
-            const u = doc.data();
-            if(u.status === "active") activeCount++;
-            
-            listContainer.innerHTML += `
-                <div class="referral-item">
-                    <div class="user-info">
-                        <b>${u.name}</b>
-                        <span>${u.phone.replace(/(\d{3})\d{5}(\d{3})/, "$1*****$2")}</span>
-                    </div>
-                    <span class="status-badge ${u.status === "active" ? 'tag-active' : 'tag-pending'}">
-                        ${u.status.toUpperCase()}
-                    </span>
-                </div>`;
-        });
-        
-        document.getElementById('totalInvites').innerText = snap.size;
-        document.getElementById('activeInvites').innerText = activeCount;
+            const userSnap = await getDoc(doc(db, "users", currentUserId));
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                document.getElementById('myReferCode').innerText = userData.myReferCode || "N/A";
+                
+                const mHistory = userData.totalMonthlyEarn || 0;
+                const pComm = userData.pendingCommission || 0;
+
+                document.getElementById('monthlyBonus').innerText = "৳ " + mHistory.toFixed(2);
+                document.getElementById('commissionEarn').innerText = "৳ " + pComm.toFixed(2);
+                document.getElementById('claimCommBtn').disabled = pComm <= 0;
+
+                const q = query(collection(db, "users"), where("referBy", "==", userData.myReferCode));
+                const querySnapshot = await getDocs(q);
+                
+                const listContainer = document.getElementById('referralList');
+                let inviteCount = 0;
+                let activeCount = 0;
+
+                if (!querySnapshot.empty) {
+                    listContainer.innerHTML = "";
+                    querySnapshot.forEach((doc) => {
+                        const data = doc.data();
+                        inviteCount++;
+                        if(data.status === "active") activeCount++;
+
+                        const item = document.createElement('div');
+                        item.className = 'referral-item';
+                        item.innerHTML = `
+                            <div class="user-info">
+                                <b>${data.name || 'Investor'}</b>
+                                <span>${data.phone ? data.phone.substring(0,5)+'***' : 'Unknown'}</span>
+                            </div>
+                            <span class="status-badge ${data.status === "active" ? 'tag-active' : 'tag-pending'}">
+                                ${data.status === "active" ? 'ACTIVE' : 'PENDING'}
+                            </span>
+                        `;
+                        listContainer.appendChild(item);
+                    });
+                }
+                document.getElementById('totalInvites').innerText = inviteCount;
+                document.getElementById('activeInvites').innerText = activeCount;
+            }
+        } catch (e) { console.error(e); }
     }
 
     window.claimCommission = async () => {
         const btn = document.getElementById('claimCommBtn');
+        const originalText = btn.innerHTML;
+        
         btn.disabled = true;
-        document.getElementById('loader-overlay').style.display = 'flex';
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
         
         try {
             const userRef = doc(db, "users", currentUserId);
             const userSnap = await getDoc(userRef);
             const amount = userSnap.data().pendingCommission || 0;
 
-            if(amount >= 1) {
+            if(amount > 0) {
                 await updateDoc(userRef, {
                     balance: increment(amount),
                     pendingCommission: 0,
-                    totalReferEarn: increment(amount)
+                    totalMonthlyEarn: increment(amount)
                 });
-                alert(`Successfully claimed ৳${amount.toFixed(2)} to main balance!`);
+                
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Success';
+                btn.style.backgroundColor = "#fff";
+                btn.style.color = "#27ae60";
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.backgroundColor = "";
+                    btn.style.color = "";
+                    loadData();
+                }, 2000);
             }
-        } catch (e) { alert("Claim failed! Network error."); }
-        document.getElementById('loader-overlay').style.display = 'none';
+        } catch (e) {
+            btn.innerHTML = 'Error';
+            btn.disabled = false;
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
+        }
     };
 
     window.copyCode = () => {
         const code = document.getElementById('myReferCode').innerText;
-        navigator.clipboard.writeText(code).then(() => alert("Code Copied: " + code));
+        navigator.clipboard.writeText(code);
+        alert("Refer code copied: " + code);
     };
 
-    window.shareLink = () => {
+    window.shareLink = async () => {
         const code = document.getElementById('myReferCode').innerText;
-        const text = `🚀 Join HedgeTrade and start earning daily! Use my Refer Code: ${code} to get extra commission.`;
+        let commVal = 0;
+        
+        const settingsSnap = await getDoc(doc(db, "settings", "commissions"));
+        if (settingsSnap.exists()) commVal = settingsSnap.data().depositComm || 0;
+
+        // সাজ্জাদ, এখানে ডোমেইন লিংকের সাথে রেফার কোড যোগ করা হয়েছে
+        const shareUrl = `${window.location.origin}/Register.html?ref=${code}`;
+        const shareText = `Join EarnMaster Pro using my link and earn ${commVal}% deposit commission!`;
+
         if (navigator.share) {
-            navigator.share({ title: 'HedgeTrade Invite', text: text, url: window.location.origin });
+            navigator.share({ 
+                title: 'EarnMaster Pro', 
+                text: shareText, 
+                url: shareUrl 
+            });
         } else {
-            prompt("Copy this invite text:", text);
+            navigator.clipboard.writeText(shareUrl);
+            alert("Referral link copied to clipboard:\n" + shareUrl);
         }
     };
 
-    initReferralPage();
+    loadData();
 </script>
 </body>
 </html>
