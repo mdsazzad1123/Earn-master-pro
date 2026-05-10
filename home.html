@@ -1,56 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
-    <script src="session.js"></script>
-    
     <script>
         if (!localStorage.getItem('currentUserId')) {
-            window.location.replace('login.html');
+            // ইনডেক্স পেজের ক্ষেত্রেও এক্সটেনশন ছাড়া রাখা হলো
+            window.location.href = '/index';
         }
     </script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HedgeTrade | Home</title>
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style> 
+    <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        body { background-color: #f5f7fa; color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
+        body { background-color: #f5f7fa; color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* --- প্রিমিয়াম পপ-আপ নোটিশ ডিজাইন --- */
-        #modal-notice {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75); display: none;
-            justify-content: center; align-items: center; z-index: 10000; padding: 25px;
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background: #fff; width: 100%; max-width: 260px; border-radius: 20px;
-            position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .modal-header {
-            background: linear-gradient(135deg, #00c853, #00e676); color: white;
-            padding: 8px 12px; text-align: center; position: relative;
-        }
-        .modal-header i { font-size: 18px; margin-bottom: 2px; display: block; }
-        .modal-header span { font-size: 11px; font-weight: 800; letter-spacing: 0.5px; display: block; }
-        .close-modal {
-            position: absolute; right: 8px; top: 6px; background: rgba(255, 255, 255, 0.3);
-            color: white; border: none; width: 20px; height: 20px; border-radius: 50%;
-            cursor: pointer; font-size: 10px; font-weight: bold; transition: 0.3s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .modal-body { padding: 20px; font-size: 13px; line-height: 1.5; color: #444; text-align: center; }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        /* --- লোডার এনিমেশন --- */
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
@@ -67,33 +32,31 @@
             border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
         }
         .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
 
-        /* --- ডিজাইন ফিচারসমূহ --- */
         .header { 
             background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://i.postimg.cc/ZYy9GXw0/pngtree-atmospheric-creative-change-money-management-can-also-earn-income-and-financial-image-276615.jpg'); 
             background-size: cover; background-position: center; color: white; padding: 40px 20px 60px 20px; border-bottom-left-radius: 40px; flex-shrink: 0; 
         }
         .balance { font-size: 36px; font-weight: bold; margin-bottom: 25px; }
         .top-btns { display: flex; gap: 12px; }
-        .top-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; cursor: pointer; transition: 0.3s; }
-        .top-btn:active { transform: scale(0.95); }
+        .top-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; cursor: pointer; }
         .btn-recharge { background-color: #00c853; }
         .btn-withdraw { background-color: #ff9900; }
 
         .quick-actions { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 20px 10px; background: white; margin: -30px 15px 15px 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; z-index: 10; flex-shrink: 0; 
         }
-        .action-item { text-align: center; cursor: pointer; transition: 0.3s; }
-        .action-item:active { transform: scale(0.9); }
+        .action-item { text-align: center; cursor: pointer; }
         .action-icon { width: 50px; height: 50px; background-color: #00c853; color: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; font-size: 20px; }
         .action-item span { font-size: 10px; font-weight: 600; color: #555; }
 
         .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 15px 130px 15px; overflow-y: scroll; flex: 1; }
         .investment-grid::-webkit-scrollbar { display: none; }
 
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; height: 215px; display: flex; flex-direction: column; transition: 0.3s; }
-        .card:active { transform: scale(0.98); }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; height: 215px; display: flex; flex-direction: column; }
         .card-img { width: 100%; height: 90px; object-fit: cover; }
         .card-content { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-title { font-size: 13px; font-weight: bold; color: #222; }
@@ -101,31 +64,18 @@
         .card-info span { color: #00c853; font-weight: 700; }
         
         .buy-btn { width: 100%; background-color: #00c853; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: 0.3s; }
-        .buy-btn:active { background-color: #00a645; }
         .buy-btn:disabled { background-color: #ccc; cursor: not-allowed; }
         .buy-btn.loading { background-color: #777 !important; }
+        .buy-btn.success { background-color: #00c853 !important; }
         .buy-btn.failed { background-color: #ff4444 !important; }
         
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; max-width: 400px; left: 50%; transform: translateX(-50%); background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.08); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 20; }
-        .nav-item { text-align: center; color: #ccc; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; transition: 0.2s; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.08); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 20; }
+        .nav-item { text-align: center; color: #ccc; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
         .nav-item.active { color: #00c853; }
         .nav-item i { font-size: 24px; display: block; margin-bottom: 4px; }
     </style>
 </head>
-<body oncontextmenu="return false;">
-
-    <div id="modal-notice">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button class="close-modal" id="close-notice-btn">✕</button>
-                <i class="fas fa-bullhorn"></i>
-                <span>IMPORTANT NEWS</span>
-            </div>
-            <div class="modal-body" id="notice-text">
-                Fetching latest updates...
-            </div>
-        </div>
-    </div>
+<body>
 
     <div id="loader-overlay">
         <div class="loader-container">
@@ -136,32 +86,32 @@
 
     <div class="header">
         <p style="font-size: 12px; opacity: 0.8;">Wallet Balance</p>
-        <h1 class="balance" id="user-balance">৳ 0.00</h1>
+        <h1 class="balance" id="user-balance">৳0.00</h1>
         <div class="top-btns">
-            <button class="top-btn btn-recharge" onclick="navigateTo('deposit.html')"><i class="fas fa-plus-circle"></i> Recharge</button>
-            <button class="top-btn btn-withdraw" onclick="navigateTo('withdraw.html')"><i class="fas fa-wallet"></i> Withdraw</button>
+            <button class="top-btn btn-recharge" onclick="navigateTo('deposit')"><i class="fas fa-plus-circle"></i> Recharge</button>
+            <button class="top-btn btn-withdraw" onclick="navigateTo('withdraw')"><i class="fas fa-wallet"></i> Withdraw</button>
         </div>
     </div>
 
     <div class="quick-actions">
-        <div class="action-item" onclick="navigateTo('deposit.html')"><div class="action-icon"><i class="fas fa-coins"></i></div><span>Recharge</span></div>
-        <div class="action-item" onclick="navigateTo('withdraw.html')"><div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div><span>Withdraw</span></div>
-        <div class="action-item" onclick="navigateTo('share.html')"><div class="action-icon"><i class="fas fa-user-plus"></i></div><span>Invite</span></div>
-        <div class="action-item" onclick="navigateTo('gift.html')"><div class="action-icon"><i class="fas fa-gift"></i></div><span>Gift Code</span></div>
+        <div class="action-item" onclick="navigateTo('deposit')"><div class="action-icon"><i class="fas fa-coins"></i></div><span>Recharge</span></div>
+        <div class="action-item" onclick="navigateTo('withdraw')"><div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div><span>Withdraw</span></div>
+        <div class="action-item" onclick="navigateTo('share')"><div class="action-icon"><i class="fas fa-user-plus"></i></div><span>Invite</span></div>
+        <div class="action-item" onclick="navigateTo('gift')"><div class="action-icon"><i class="fas fa-gift"></i></div><span>Gift Code</span></div>
     </div>
 
     <div class="investment-grid" id="package-container"></div>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home.html')"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="navigateTo('order.html')"><i class="fas fa-tasks"></i>Order</div>
-        <div class="nav-item" onclick="navigateTo('share.html')"><i class="fas fa-users"></i>Team</div>
-        <div class="nav-item" onclick="navigateTo('profile.html')"><i class="fas fa-user-circle"></i>Mine</div>
+        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i>Home</div>
+        <div class="nav-item" onclick="navigateTo('order')"><i class="fas fa-tasks"></i>Order</div>
+        <div class="nav-item" onclick="navigateTo('share')"><i class="fas fa-users"></i>Team</div>
+        <div class="nav-item" onclick="navigateTo('profile')"><i class="fas fa-user-circle"></i>Mine</div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, getDoc, collection, getDocs, runTransaction, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, getDocs, runTransaction, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
@@ -173,106 +123,96 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const userId = localStorage.getItem('currentUserId');
-        const loader = document.getElementById('loader-overlay');
 
-        loader.style.display = 'flex';
-
-        async function fetchNotice() {
-            try {
-                const docSnap = await getDoc(doc(db, "settings", "app_config"));
-                if (docSnap.exists() && docSnap.data().home_notice) {
-                    document.getElementById('notice-text').innerText = docSnap.data().home_notice;
-                    document.getElementById('modal-notice').style.display = 'flex';
-                }
-            } catch (e) { console.error("Notice Error", e); }
-        }
-        document.getElementById('close-notice-btn').onclick = () => {
-            document.getElementById('modal-notice').style.display = 'none';
-        };
-        fetchNotice();
-
-        window.navigateTo = (url) => {
+        window.navigateTo = (page) => {
+            const loader = document.getElementById('loader-overlay');
             loader.style.display = 'flex'; 
-            setTimeout(() => { window.location.href = url; }, 800); 
+            // লিঙ্কের শেষে .html বাদ দিয়ে শুধু পেজের নাম দেওয়া হয়েছে
+            setTimeout(() => { window.location.href = '/' + page; }, 1000); 
         };
 
         if (userId) {
             onSnapshot(doc(db, "users", userId), (docSnap) => {
                 if (docSnap.exists()) {
-                    document.getElementById('user-balance').innerText = `৳ ${parseFloat(docSnap.data().balance || 0).toFixed(2)}`;
+                    const data = docSnap.data();
+                    document.getElementById('user-balance').innerText = `৳${parseFloat(data.balance || 0).toFixed(2)}`;
                 }
             });
         }
 
         let timerInterval;
+
         const startGlobalTimer = (remainingSeconds) => {
             clearInterval(timerInterval);
-            const updateUI = () => {
-                const allBtns = document.querySelectorAll('.buy-btn');
+            const allBtns = document.querySelectorAll('.buy-btn');
+            
+            timerInterval = setInterval(() => {
+                remainingSeconds--;
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = remainingSeconds % 60;
+                const timeString = `Wait ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                allBtns.forEach(b => {
+                    b.disabled = true;
+                    b.innerText = timeString;
+                });
+
                 if (remainingSeconds <= 0) {
                     clearInterval(timerInterval);
                     localStorage.removeItem('buyTimerExpiry');
-                    allBtns.forEach(b => { b.disabled = false; b.innerText = "Buy Now"; b.classList.remove('loading'); });
-                    return;
+                    allBtns.forEach(b => {
+                        b.disabled = false;
+                        b.innerText = "Buy Now";
+                        b.classList.remove('success', 'loading', 'failed');
+                    });
                 }
-                const timeString = `Wait ${Math.floor(remainingSeconds/60)}:${(remainingSeconds%60).toString().padStart(2, '0')}`;
-                allBtns.forEach(b => { b.disabled = true; b.innerText = timeString; });
-                remainingSeconds--;
-            };
-            updateUI();
-            timerInterval = setInterval(updateUI, 1000);
+            }, 1000);
+        };
+
+        const checkExistingTimer = () => {
+            const expiry = localStorage.getItem('buyTimerExpiry');
+            if (expiry) {
+                const now = Date.now();
+                const diff = Math.floor((expiry - now) / 1000);
+                if (diff > 0) {
+                    startGlobalTimer(diff);
+                } else {
+                    localStorage.removeItem('buyTimerExpiry');
+                }
+            }
         };
 
         const fetchPackages = async () => {
-            try {
-                const querySnapshot = await getDocs(collection(db, "packages"));
-                const container = document.getElementById('package-container');
-                container.innerHTML = '';
-                
-                querySnapshot.forEach((docSnap) => {
-                    const item = docSnap.data();
-                    const price = parseFloat(item.price || 0);
-                    const profit = parseFloat(item.profit || 0);
-                    const cycle = Math.round(parseFloat(item.cycle || 0));
-                    
-                    const cardHtml = `
-                        <div class="card">
-                            <img src="${item.image}" class="card-img">
-                            <div class="card-content">
-                                <p class="card-title">${item.name}</p>
-                                <div class="card-info">Price-<span>৳ ${price}</span></div>
-                                <div class="card-info">Profit-<span>৳ ${profit}</span></div>
-                                <div class="card-info">Day-<span>${cycle} day</span></div>
-                                <div class="card-info">Total-<span>৳ ${price + profit}</span></div>
-                                <button class="buy-btn" data-id="${docSnap.id}" data-price="${price}" data-profit="${profit}" data-cycle="${cycle}" data-name="${item.name}">Buy Now</button>
-                            </div>
-                        </div>`;
-                    container.insertAdjacentHTML('beforeend', cardHtml);
-                });
+            const querySnapshot = await getDocs(collection(db, "packages"));
+            const container = document.getElementById('package-container');
+            container.innerHTML = '';
+            querySnapshot.forEach((doc) => {
+                const item = doc.data();
+                const price = parseFloat(item.price || 0);
+                const profit = parseFloat(item.profit || 0);
+                const cycle = Math.round(parseFloat(item.cycle || 0));
+                const totalReturn = (price + profit).toFixed(0);
 
-                document.querySelectorAll('.buy-btn').forEach(btn => {
-                    btn.onclick = () => {
-                        const d = btn.dataset;
-                        buyPackage(d.id, parseFloat(d.price), parseFloat(d.profit), parseInt(d.cycle), d.name);
-                    };
-                });
-
-                const expiry = localStorage.getItem('buyTimerExpiry');
-                if (expiry) {
-                    const diff = Math.floor((expiry - Date.now()) / 1000);
-                    if (diff > 0) startGlobalTimer(diff);
-                }
-            } finally {
-                loader.style.display = 'none';
-            }
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="card">
+                        <img src="${item.image}" class="card-img">
+                        <div class="card-content">
+                            <p class="card-title">${item.name}</p>
+                            <div class="card-info">price-<span>৳ ${price}</span></div>
+                            <div class="card-info">profit-<span>৳ ${profit}</span></div>
+                            <div class="card-info">Day-<span>${cycle} day</span></div>
+                            <div class="card-info">Total-<span>৳ ${totalReturn}</span></div>
+                            <button class="buy-btn" id="btn-${doc.id}" onclick="buyPackage('${doc.id}', ${price}, ${profit}, ${cycle}, '${item.name}')">Buy Now</button>
+                        </div>
+                    </div>
+                `);
+            });
+            checkExistingTimer();
         };
         fetchPackages();
 
         window.buyPackage = async (id, price, profit, cycle, name) => {
-            if (localStorage.getItem('buyTimerExpiry')) return;
-            if (!userId) { alert("Please login first"); return; }
-
-            const btn = document.querySelector(`[data-id="${id}"]`);
+            const btn = document.getElementById(`btn-${id}`);
             btn.disabled = true;
             btn.innerText = "Processing...";
             btn.classList.add('loading');
@@ -282,23 +222,28 @@
                 await runTransaction(db, async (transaction) => {
                     const userDoc = await transaction.get(userRef);
                     const currentBalance = parseFloat(userDoc.data().balance || 0);
-                    
+
                     if (currentBalance < price) throw "Insufficient Balance";
 
                     transaction.update(userRef, { balance: currentBalance - price });
                     await addDoc(collection(db, "orders"), {
-                        userId, packageName: name, price, dailyProfit: profit, cycle,
-                        status: "active", purchaseDate: serverTimestamp()
+                        userId: userId,
+                        packageName: name,
+                        price: price,
+                        dailyProfit: profit,
+                        cycle: cycle,
+                        status: "active",
+                        purchaseDate: serverTimestamp()
                     });
                 });
 
-                localStorage.setItem('buyTimerExpiry', Date.now() + 120000);
+                const expiryTime = Date.now() + (120 * 1000);
+                localStorage.setItem('buyTimerExpiry', expiryTime);
                 startGlobalTimer(120);
-                alert("Success! Investment Activated.");
 
             } catch (e) {
-                btn.innerText = (e === "Insufficient Balance") ? "Low Balance" : "Failed";
                 btn.classList.replace('loading', 'failed');
+                btn.innerText = (e === "Insufficient Balance") ? "Low Balance!" : "Failed!";
                 setTimeout(() => {
                     btn.disabled = false;
                     btn.classList.remove('failed');
