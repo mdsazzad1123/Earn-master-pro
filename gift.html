@@ -1,25 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
-    <script src="session.js"></script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Redeem Gift Code</title>
-    
-    <script>
-        if (!localStorage.getItem('currentUserId')) {
-            window.location.replace('login.html');
-        }
-    </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    
+    <script>
+        if (!localStorage.getItem('currentUserId')) {
+            // .html এক্সটেনশন ছাড়া রিডাইরেক্ট
+            window.location.href = 'login';
+        }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -45,9 +37,14 @@
             border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
         }
         .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
         @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
 
-        .container { width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.95); min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .container { 
+            width: 100%; max-width: 400px; background: rgba(255, 255, 255, 0.95); 
+            min-height: 100vh; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.1); 
+        }
         .header { background-color: #00a651; color: white; padding: 15px; display: flex; align-items: center; font-size: 18px; font-weight: bold; }
         .header i { cursor: pointer; }
 
@@ -97,7 +94,7 @@
         .ok-btn { background: #00a651; color: white; border: none; padding: 12px 40px; border-radius: 30px; font-size: 16px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
-<body oncontextmenu="return false;"> 
+<body>
 
 <div id="loader-overlay">
     <div class="loader-container">
@@ -108,9 +105,9 @@
 
 <div class="container">
     <div class="header">
-        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home.html')"></i>
+        <i class="fa-solid fa-arrow-left" onclick="navigateWithAnimation('home')"></i>
         <div style="flex-grow: 1; text-align: center;">Gift Code</div>
-        <i class="fa-solid fa-clock-rotate-left" onclick="navigateWithAnimation('reward_history.html')"></i>
+        <i class="fa-solid fa-clock-rotate-left" onclick="navigateWithAnimation('reward_history')"></i>
     </div>
 
     <div class="content">
@@ -151,7 +148,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, deleteDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, increment, deleteDoc, collection, addDoc, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
@@ -167,7 +164,8 @@
 
     window.navigateWithAnimation = (url) => {
         document.getElementById('loader-overlay').style.display = 'flex';
-        setTimeout(() => { window.location.replace(url); }, 800);
+        // .html এক্সটেনশন ছাড়া ন্যাভিগেশন
+        setTimeout(() => { window.location.href = url; }, 800);
     };
 
     window.showCelebration = (amount, bannerImg) => {
@@ -175,7 +173,7 @@
         if(bannerImg) {
             celBox.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('${bannerImg}')`;
         }
-        document.getElementById('celebrationAmount').innerText = `৳${amount || 0}`;
+        document.getElementById('celebrationAmount').innerText = `৳${amount}`;
         document.getElementById('celebration-overlay').style.display = 'flex';
     };
 
@@ -190,41 +188,38 @@
         const msgDiv = document.getElementById('msg');
 
         if (!codeInput) { alert("Please enter a code!"); return; }
-        if (!currentUserId) { alert("User session expired. Please login again."); return; }
 
         btn.disabled = true;
         document.getElementById('btnText').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Checking...';
 
         try {
-            // ১. হিস্টোরি চেক (আগে ব্যবহার করেছেন কি না)
             const historyRef = collection(db, "reward_history");
             const q = query(historyRef, where("userId", "==", currentUserId), where("code", "==", codeInput));
             const historySnap = await getDocs(q);
-            if (!historySnap.empty) throw new Error("You have already used this gift code!");
 
-            // ২. কোড তথ্য সংগ্রহ
+            if (!historySnap.empty) {
+                throw new Error("You have already used this gift code!");
+            }
+
             const giftRef = doc(db, "gift_codes", codeInput);
             const giftSnap = await getDoc(giftRef);
-            if (!giftSnap.exists()) throw new Error("Invalid or Expired Gift Code!");
+
+            if (!giftSnap.exists()) {
+                throw new Error("Invalid or Expired Gift Code!");
+            }
 
             const data = giftSnap.data();
-            
-            // ৩. রিওয়ার্ড ক্যালকুলেশন
-            let finalReward = 0;
-            const dbAmount = parseFloat(data.amount) || 0;
-            const dbBudget = parseFloat(data.remainingBudget) || 0;
 
-            if (data.type === 'one_time' || data.type === 'private') {
-                finalReward = dbAmount;
-                if (data.type === 'private') {
-                    const fixPhone = (p) => String(p).replace(/\D/g, '').slice(-10);
-                    if (fixPhone(data.targetUser) !== fixPhone(userPhone)) {
-                        throw new Error("This is a private code, not for you!");
-                    }
-                }
+            if (data.type === 'private' && data.targetUser !== userPhone) {
+                throw new Error("This is a private code, not for you!");
+            }
+
+            let finalReward = 0;
+            if (data.type === 'private') {
+                finalReward = Number(data.amount);
             } else {
                 const randomPick = Math.floor(Math.random() * 10) + 1;
-                finalReward = Math.min(randomPick, dbBudget);
+                finalReward = Math.min(randomPick, Number(data.remainingBudget));
             }
 
             if (finalReward <= 0) {
@@ -232,21 +227,20 @@
                 throw new Error("Reward budget is finished!");
             }
 
-            // ৪. ব্যালেন্স আপডেট (The Fix: setDoc with merge)
             const userRef = doc(db, "users", currentUserId);
-            await setDoc(userRef, { 
-                balance: increment(finalReward) 
-            }, { merge: true });
+            await updateDoc(userRef, { balance: increment(finalReward) });
 
-            // ৫. কোড ম্যানেজমেন্ট (ডিলিট বা বাজেট কমানো)
-            if (data.type === 'one_time' || data.type === 'private') {
-                await deleteDoc(giftRef);
+            if (data.type !== 'private') {
+                const newBudget = Number(data.remainingBudget) - finalReward;
+                if (newBudget <= 0) {
+                    await deleteDoc(giftRef);
+                } else {
+                    await updateDoc(giftRef, { remainingBudget: increment(-finalReward) });
+                }
             } else {
-                if (dbBudget - finalReward <= 0) await deleteDoc(giftRef);
-                else await updateDoc(giftRef, { remainingBudget: increment(-finalReward) });
+                await deleteDoc(giftRef);
             }
 
-            // ৬. হিস্টোরি সেভ
             await addDoc(collection(db, "reward_history"), {
                 userId: currentUserId,
                 code: codeInput,
@@ -262,7 +256,6 @@
             msgDiv.style.color = "#f44336";
             msgDiv.innerText = error.message;
             msgDiv.style.display = "block";
-            console.error("Redeem Error:", error);
         } finally {
             btn.disabled = false;
             document.getElementById('btnText').innerText = "CLAIM REWARD";
