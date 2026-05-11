@@ -3,8 +3,7 @@
 <head>
     <script>
         if (!localStorage.getItem('currentUserId')) {
-            // ইনডেক্স পেজের ক্ষেত্রেও এক্সটেনশন ছাড়া রাখা হলো
-            window.location.href = '/index';
+            window.location.href = 'index.html';
         }
     </script>
 
@@ -13,66 +12,202 @@
     <title>HedgeTrade | Home</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: #f5f7fa; color: #333; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        #content-frame {
+            display: none;
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #f5f7fa;
+        }
+
+        .fixed-top-section {
+            flex-shrink: 0;
+            z-index: 100;
+            background-color: #f5f7fa;
+        }
+
+        .main-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            display: block;
+            scroll-behavior: smooth;
+            padding-bottom: 100px;
+        }
+        .main-scroll-area::-webkit-scrollbar { display: none; }
 
         #loader-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(2px);
             display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 9999;
         }
-        .loader-container { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        .loader-container { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 12px; 
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
         .proc-9 { 
-            width: 80px; height: 80px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
+            width: 50px; height: 50px; position: relative; border: 2px solid rgba(0, 200, 83, 0.1); 
             border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff;
         }
-        .loader-img { width: 45px; height: 45px; filter: drop-shadow(0 5px 10px rgba(0, 200, 83, 0.5)); }
+        .loader-img { width: 28px; height: 28px; filter: drop-shadow(0 3px 6px rgba(0, 200, 83, 0.3)); }
         .proc-9::before { 
             content: ""; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; 
-            border: 3px solid #00c853; border-radius: 50%; animation: trace 2s linear infinite; clip-path: inset(0 0 95% 0); 
+            border: 2.5px solid #00c853; border-radius: 50%; animation: trace 1.5s linear infinite; clip-path: inset(0 0 95% 0); 
         }
-        .proc-3 { color: #00c853; font-weight: bold; font-size: 20px; }
+        .proc-3 { color: #00c853; font-weight: 700; font-size: 14px; letter-spacing: 0.5px; }
         .proc-3:after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
+        
         @keyframes trace { 0% { clip-path: inset(0 0 95% 0); } 25% { clip-path: inset(0 95% 0 0); } 50% { clip-path: inset(95% 0 0 0); } 75% { clip-path: inset(0 0 0 95%); } 100% { clip-path: inset(0 0 95% 0); } }
         @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 40% { color: #00c853; text-shadow: .5em 0 0 rgba(0,0,0,0), 1em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .5em 0 0 #00c853, 1em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .5em 0 0 #00c853, 1em 0 0 #00c853; } }
 
         .header { 
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://i.postimg.cc/ZYy9GXw0/pngtree-atmospheric-creative-change-money-management-can-also-earn-income-and-financial-image-276615.jpg'); 
-            background-size: cover; background-position: center; color: white; padding: 40px 20px 60px 20px; border-bottom-left-radius: 40px; flex-shrink: 0; 
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); 
+            color: white; padding: 20px 15px 65px 15px; border-bottom-left-radius: 35px; border-bottom-right-radius: 35px; 
         }
-        .balance { font-size: 36px; font-weight: bold; margin-bottom: 25px; }
-        .top-btns { display: flex; gap: 12px; }
-        .top-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; color: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; cursor: pointer; }
-        .btn-recharge { background-color: #00c853; }
-        .btn-withdraw { background-color: #ff9900; }
 
-        .quick-actions { 
-            display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 20px 10px; background: white; margin: -30px 15px 15px 15px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); position: relative; z-index: 10; flex-shrink: 0; 
+        .balance-box {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            padding: 12px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
+        .user-info-side { display: flex; align-items: center; gap: 10px; }
+        .user-avatar { width: 40px; height: 40px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #fff; }
+        .user-text p { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+        .user-text h2 { font-size: 13px; font-weight: 600; }
+
+        .balance-side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; }
+        .balance-side p { font-size: 9px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+        
+        .balance-container {
+            position: relative; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(12px);
+            height: 34px; width: 140px; border-radius: 50px; cursor: pointer; overflow: hidden;
+            display: flex; align-items: center; border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .balance-container.pulse { animation: containerPulse 0.4s ease-out; }
+        @keyframes containerPulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+        .tap-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(90deg, #ffd700, #fff9c4, #ffb300);
+            display: flex; align-items: center; justify-content: flex-start;
+            padding-left: 6px; border-radius: 50px;
+            box-shadow: inset 0 2px 5px rgba(255,255,255,0.5), 0 3px 10px rgba(212, 175, 55, 0.3);
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.35), background 0.4s ease;
+            z-index: 2;
+        }
+        .tap-layer i {
+            background: #fff; color: #d4af37; width: 26px; height: 26px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 13px; margin-right: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+        .tap-layer span { color: #5d4037; font-size: 11px; font-weight: 800; text-transform: uppercase; white-space: nowrap; transition: opacity 0.3s ease; }
+        .balance-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            padding-right: 15px; background: transparent; color: #fff;
+            font-weight: 800; font-size: 13px; z-index: 1; opacity: 0; transition: opacity 0.3s ease;
+        }
+        
+        .balance-container.active .tap-layer { transform: translateX(70%); background: transparent; box-shadow: none; }
+        .balance-container.active .tap-layer span { opacity: 0; }
+        .balance-container.active .balance-layer { opacity: 1; }
+
+        .top-btns { display: flex; gap: 10px; }
+        .top-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; color: white; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; cursor: pointer; }
+        .btn-recharge { background-color: #00c853; box-shadow: 0 4px 12px rgba(0, 200, 83, 0.2); }
+        .btn-withdraw { background-color: #ff9900; box-shadow: 0 4px 12px rgba(255, 153, 0, 0.2); }
+
+        .notice-container {
+            margin: -35px 15px 10px 15px; background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px); border-radius: 12px; padding: 8px 15px;
+            display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            z-index: 15; position: relative; border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        .notice-container i { color: #ff9900; font-size: 16px; }
+        .notice-scroll { flex: 1; overflow: hidden; white-space: nowrap; }
+        .notice-scroll p { display: inline-block; font-size: 11px; font-weight: 600; color: #444; animation: scroll-text 15s linear infinite; padding-left: 100%; }
+        @keyframes scroll-text { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+        .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; padding: 15px 10px; background: white; margin: 0 15px 15px 15px; border-radius: 18px; box-shadow: 0 8px 25px rgba(0,0,0,0.06); position: relative; z-index: 10; }
         .action-item { text-align: center; cursor: pointer; }
-        .action-icon { width: 50px; height: 50px; background-color: #00c853; color: white; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px auto; font-size: 20px; }
-        .action-item span { font-size: 10px; font-weight: 600; color: #555; }
+        .action-icon { width: 45px; height: 45px; background-color: #00c853; color: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 0 auto 6px auto; font-size: 18px; }
+        .action-item span { font-size: 9px; font-weight: 600; color: #555; }
 
-        .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px 15px 130px 15px; overflow-y: scroll; flex: 1; }
-        .investment-grid::-webkit-scrollbar { display: none; }
+        .investment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 5px 15px 20px 15px; }
 
-        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; height: 215px; display: flex; flex-direction: column; }
-        .card-img { width: 100%; height: 90px; object-fit: cover; }
+        .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; height: 235px; display: flex; flex-direction: column; }
+        .card-img { width: 100%; height: 90px; object-fit: contain; background: #fafafa; }
         .card-content { padding: 8px; flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; }
         .card-title { font-size: 13px; font-weight: bold; color: #222; }
-        .card-info { font-size: 10px; color: #666; display: flex; justify-content: space-between; }
-        .card-info span { color: #00c853; font-weight: 700; }
+        
+        .card-info { font-size: 10px; color: #666; display: flex; justify-content: space-between; align-items: center; }
+        .amount-text { font-size: 12px; font-weight: 800; color: #00c853; display: flex; align-items: center; }
+        .amount-text small { font-size: 9px; margin-right: 1px; font-weight: 500; }
+        .total-text { color: #1a2a6c; font-weight: 800; }
         
         .buy-btn { width: 100%; background-color: #00c853; color: white; border: none; padding: 8px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 11px; transition: 0.3s; }
-        .buy-btn:disabled { background-color: #ccc; cursor: not-allowed; }
-        .buy-btn.loading { background-color: #777 !important; }
-        .buy-btn.success { background-color: #00c853 !important; }
-        .buy-btn.failed { background-color: #ff4444 !important; }
         
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -5px 25px rgba(0,0,0,0.08); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 20; }
-        .nav-item { text-align: center; color: #ccc; text-decoration: none; font-size: 11px; flex: 1; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; padding: 12px 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.08); border-top-left-radius: 25px; border-top-right-radius: 25px; z-index: 100; border-top: 1px solid #f0f0f0; }
+        .nav-item { text-align: center; color: #94a3b8; text-decoration: none; font-size: 11px; font-weight: 600; flex: 1; cursor: pointer; transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
         .nav-item.active { color: #00c853; }
-        .nav-item i { font-size: 24px; display: block; margin-bottom: 4px; }
+        .nav-item svg { width: 24px; height: 24px; fill: currentColor; }
+        .nav-item.active svg { transform: translateY(-3px); filter: drop-shadow(0 4px 6px rgba(0, 200, 83, 0.3)); }
+        
+        #buy-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); display: none; justify-content: center;
+            align-items: center; z-index: 10000; backdrop-filter: blur(4px);
+        }
+        .modal-content {
+            background: #ffffff; color: #333;
+            width: 75%; max-width: 260px; padding: 20px 15px;
+            border-radius: 24px; text-align: center; position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.8);
+            transform: scale(0.85); opacity: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #buy-modal.show .modal-content { transform: scale(1); opacity: 1; }
+        
+        .modal-divider { width: 100%; height: 1px; background: #f1f5f9; margin: 12px 0; }
+        
+        .modal-close-btn { 
+            width: 100%; background: #1e293b; color: white; 
+            border: none; padding: 10px; border-radius: 10px; font-weight: 700; 
+            font-size: 13px; cursor: pointer; transition: 0.2s;
+        }
+        
+        .modal-icon { 
+            width: 50px; height: 50px; border-radius: 50%; display: flex; 
+            align-items: center; justify-content: center; margin: 0 auto 12px auto; 
+            font-size: 22px;
+        }
+        .icon-success { background: #ecfdf5; color: #10b981; border: 1.5px solid #10b981; }
+        .icon-error { background: #fef2f2; color: #ef4444; border: 1.5px solid #ef4444; }
+        
+        .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; color: #1e293b; }
+        .modal-msg { font-size: 11px; color: #64748b; line-height: 1.4; padding: 0 5px; }
+        .modal-amount { display: block; margin-top: 4px; font-weight: 800; font-size: 16px; }
+        .amt-success { color: #10b981; }
+        .amt-error { color: #ef4444; }
+
+        @media (min-width: 1025px) {
+            .investment-grid { grid-template-columns: repeat(4, 1fr); }
+        }
     </style>
 </head>
 <body>
@@ -84,34 +219,78 @@
         </div>
     </div>
 
-    <div class="header">
-        <p style="font-size: 12px; opacity: 0.8;">Wallet Balance</p>
-        <h1 class="balance" id="user-balance">৳0.00</h1>
-        <div class="top-btns">
-            <button class="top-btn btn-recharge" onclick="navigateTo('deposit')"><i class="fas fa-plus-circle"></i> Recharge</button>
-            <button class="top-btn btn-withdraw" onclick="navigateTo('withdraw')"><i class="fas fa-wallet"></i> Withdraw</button>
+    <div id="buy-modal">
+        <div class="modal-content">
+            <div id="modal-icon-div" class="modal-icon"></div>
+            <h3 id="modal-status-title" class="modal-title"></h3>
+            <p id="modal-status-msg" class="modal-msg"></p>
+            <span id="modal-status-amount" class="modal-amount"></span>
+            <div class="modal-divider"></div>
+            <button class="modal-close-btn" onclick="closeModal()">Close</button>
         </div>
     </div>
 
-    <div class="quick-actions">
-        <div class="action-item" onclick="navigateTo('deposit')"><div class="action-icon"><i class="fas fa-coins"></i></div><span>Recharge</span></div>
-        <div class="action-item" onclick="navigateTo('withdraw')"><div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div><span>Withdraw</span></div>
-        <div class="action-item" onclick="navigateTo('share')"><div class="action-icon"><i class="fas fa-user-plus"></i></div><span>Invite</span></div>
-        <div class="action-item" onclick="navigateTo('gift')"><div class="action-icon"><i class="fas fa-gift"></i></div><span>Gift Code</span></div>
+    <div class="fixed-top-section" id="top-content">
+        <div class="header">
+            <div class="balance-box">
+                <div class="user-info-side">
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                    <div class="user-text">
+                        <p>WELCOME</p>
+                        <h2 id="user-display-name">Loading...</h2>
+                    </div>
+                </div>
+                <div class="balance-side">
+                    <p>Total Balance</p>
+                    <div class="balance-container" id="bal-container" onclick="toggleBalance()">
+                        <div class="tap-layer"><i>৳</i><span>Tap Balance</span></div>
+                        <div class="balance-layer"><span id="user-balance">৳ 0.00</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="top-btns">
+                <button class="top-btn btn-recharge" onclick="navigateTo('deposit.html')"><i class="fas fa-plus-circle"></i> Recharge</button>
+                <button class="top-btn btn-withdraw" onclick="navigateTo('withdraw.html')"><i class="fas fa-hand-holding-usd"></i> Withdraw</button>
+            </div>
+        </div>
+
+        <div class="notice-container">
+            <i class="fas fa-bullhorn"></i>
+            <div class="notice-scroll"><p>📢 “Invest online and earn! Increase your income from home—make smart decisions, build your future today.”</p></div>
+        </div>
+
+        <div class="quick-actions">
+            <div class="action-item" onclick="navigateTo('deposit.html')"><div class="action-icon"><i class="fas fa-coins"></i></div><span>Recharge</span></div>
+            <div class="action-item" onclick="navigateTo('withdraw.html')"><div class="action-icon"><i class="fas fa-hand-holding-usd"></i></div><span>Withdraw</span></div>
+            <div class="action-item" onclick="navigateTo('share.html')"><div class="action-icon"><i class="fas fa-user-plus"></i></div><span>Invite</span></div>
+            <div class="action-item" onclick="navigateTo('gift.html')"><div class="action-icon"><i class="fas fa-gift"></i></div><span>Gift Code</span></div>
+        </div>
     </div>
 
-    <div class="investment-grid" id="package-container"></div>
+    <div id="main-scroll" class="main-scroll-area">
+        <div class="investment-grid" id="package-container"></div>
+    </div>
+
+    <iframe id="content-frame"></iframe>
 
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i>Home</div>
-        <div class="nav-item" onclick="navigateTo('order')"><i class="fas fa-tasks"></i>Order</div>
-        <div class="nav-item" onclick="navigateTo('share')"><i class="fas fa-users"></i>Team</div>
-        <div class="nav-item" onclick="navigateTo('profile')"><i class="fas fa-user-circle"></i>Mine</div>
+        <div class="nav-item active" onclick="navSmart(this, 'home.html')">
+            <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>Home
+        </div>
+        <div class="nav-item" onclick="navSmart(this, 'order.html', true)">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>Order
+        </div>
+        <div class="nav-item" onclick="navSmart(this, 'share.html', true)">
+            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>Team
+        </div>
+        <div class="nav-item" onclick="navSmart(this, 'profile.html')">
+            <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>Mine
+        </div>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, collection, getDocs, runTransaction, serverTimestamp, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, onSnapshot, collection, getDocs, updateDoc, addDoc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyD-XRUDILxlkOQk4bbpkajLFaRmCVeMxEk",
@@ -123,133 +302,155 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const userId = localStorage.getItem('currentUserId');
+        let currentBalance = 0;
 
-        window.navigateTo = (page) => {
-            const loader = document.getElementById('loader-overlay');
-            loader.style.display = 'flex'; 
-            // লিঙ্কের শেষে .html বাদ দিয়ে শুধু পেজের নাম দেওয়া হয়েছে
-            setTimeout(() => { window.location.href = '/' + page; }, 1000); 
+        const formatCurrency = (amount) => {
+            return `৳ ${parseFloat(amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         };
 
         if (userId) {
             onSnapshot(doc(db, "users", userId), (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    document.getElementById('user-balance').innerText = `৳${parseFloat(data.balance || 0).toFixed(2)}`;
+                    currentBalance = parseFloat(data.balance || 0);
+                    document.getElementById('user-balance').innerText = formatCurrency(currentBalance);
+                    document.getElementById('user-display-name').innerText = data.name || "Member";
                 }
             });
         }
 
-        let timerInterval;
-
-        const startGlobalTimer = (remainingSeconds) => {
-            clearInterval(timerInterval);
-            const allBtns = document.querySelectorAll('.buy-btn');
-            
-            timerInterval = setInterval(() => {
-                remainingSeconds--;
-                const minutes = Math.floor(remainingSeconds / 60);
-                const seconds = remainingSeconds % 60;
-                const timeString = `Wait ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-
-                allBtns.forEach(b => {
-                    b.disabled = true;
-                    b.innerText = timeString;
-                });
-
-                if (remainingSeconds <= 0) {
-                    clearInterval(timerInterval);
-                    localStorage.removeItem('buyTimerExpiry');
-                    allBtns.forEach(b => {
-                        b.disabled = false;
-                        b.innerText = "Buy Now";
-                        b.classList.remove('success', 'loading', 'failed');
-                    });
-                }
-            }, 1000);
-        };
-
-        const checkExistingTimer = () => {
-            const expiry = localStorage.getItem('buyTimerExpiry');
-            if (expiry) {
-                const now = Date.now();
-                const diff = Math.floor((expiry - now) / 1000);
-                if (diff > 0) {
-                    startGlobalTimer(diff);
-                } else {
-                    localStorage.removeItem('buyTimerExpiry');
-                }
-            }
-        };
-
         const fetchPackages = async () => {
-            const querySnapshot = await getDocs(collection(db, "packages"));
-            const container = document.getElementById('package-container');
-            container.innerHTML = '';
-            querySnapshot.forEach((doc) => {
-                const item = doc.data();
-                const price = parseFloat(item.price || 0);
-                const profit = parseFloat(item.profit || 0);
-                const cycle = Math.round(parseFloat(item.cycle || 0));
-                const totalReturn = (price + profit).toFixed(0);
+            try {
+                const querySnapshot = await getDocs(collection(db, "packages"));
+                let packages = [];
+                querySnapshot.forEach((doc) => packages.push({ id: doc.id, ...doc.data() }));
+                packages.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
 
-                container.insertAdjacentHTML('beforeend', `
-                    <div class="card">
-                        <img src="${item.image}" class="card-img">
-                        <div class="card-content">
-                            <p class="card-title">${item.name}</p>
-                            <div class="card-info">price-<span>৳ ${price}</span></div>
-                            <div class="card-info">profit-<span>৳ ${profit}</span></div>
-                            <div class="card-info">Day-<span>${cycle} day</span></div>
-                            <div class="card-info">Total-<span>৳ ${totalReturn}</span></div>
-                            <button class="buy-btn" id="btn-${doc.id}" onclick="buyPackage('${doc.id}', ${price}, ${profit}, ${cycle}, '${item.name}')">Buy Now</button>
+                const container = document.getElementById('package-container');
+                container.innerHTML = '';
+                packages.forEach((item) => {
+                    const totalIncome = (parseFloat(item.profit) * parseInt(item.cycle)) + parseFloat(item.price);
+                    container.insertAdjacentHTML('beforeend', `
+                        <div class="card">
+                            <img src="${item.image}" class="card-img">
+                            <div class="card-content">
+                                <p class="card-title">${item.name}</p>
+                                <div class="card-info">Price<div class="amount-text"><small>৳</small>${parseFloat(item.price).toLocaleString()}</div></div>
+                                <div class="card-info">Profit<div class="amount-text"><small>৳</small>${parseFloat(item.profit).toLocaleString()}</div></div>
+                                <div class="card-info">Total<div class="amount-text total-text"><small>৳</small>${totalIncome.toLocaleString()}</div></div>
+                                <div class="card-info">Day<span>${item.cycle} day</span></div>
+                                <button class="buy-btn" onclick="buyPackage('${item.id}', ${item.price}, ${item.profit}, ${item.cycle}, '${item.name}')">Buy Now</button>
+                            </div>
                         </div>
-                    </div>
-                `);
-            });
-            checkExistingTimer();
+                    `);
+                });
+            } catch (error) { console.error(error); }
         };
         fetchPackages();
 
-        window.buyPackage = async (id, price, profit, cycle, name) => {
-            const btn = document.getElementById(`btn-${id}`);
-            btn.disabled = true;
-            btn.innerText = "Processing...";
-            btn.classList.add('loading');
+        window.showStatusModal = (type, title, msg, amount = "") => {
+            const modal = document.getElementById('buy-modal');
+            const iconDiv = document.getElementById('modal-icon-div');
+            const titleEl = document.getElementById('modal-status-title');
+            const msgEl = document.getElementById('modal-status-msg');
+            const amountEl = document.getElementById('modal-status-amount');
+
+            iconDiv.className = 'modal-icon ' + (type === 'success' ? 'icon-success' : 'icon-error');
+            iconDiv.innerHTML = type === 'success' ? '<i class="fas fa-check"></i>' : '<i class="fas fa-times"></i>';
+            
+            titleEl.innerText = title;
+            msgEl.innerText = msg;
+            
+            if(amount) {
+                amountEl.innerText = `৳ ${parseFloat(amount).toLocaleString()}`;
+                amountEl.className = 'modal-amount ' + (type === 'success' ? 'amt-success' : 'amt-error');
+            } else {
+                amountEl.innerText = "";
+            }
+
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('show'), 50);
+        };
+
+        window.closeModal = () => {
+            const modal = document.getElementById('buy-modal');
+            modal.classList.remove('show');
+            setTimeout(() => modal.style.display = 'none', 300);
+        };
+
+        window.buyPackage = async (packageId, price, profit, cycle, name) => {
+            if (!userId) return;
+            const loader = document.getElementById('loader-overlay');
+            loader.style.display = 'flex';
+
+            await new Promise(resolve => setTimeout(resolve, 2000));
 
             try {
                 const userRef = doc(db, "users", userId);
-                await runTransaction(db, async (transaction) => {
-                    const userDoc = await transaction.get(userRef);
-                    const currentBalance = parseFloat(userDoc.data().balance || 0);
+                const freshSnap = await getDoc(userRef);
+                if (!freshSnap.exists()) { loader.style.display = 'none'; return; }
 
-                    if (currentBalance < price) throw "Insufficient Balance";
+                const dbBalance = parseFloat(freshSnap.data().balance || 0);
 
-                    transaction.update(userRef, { balance: currentBalance - price });
-                    await addDoc(collection(db, "orders"), {
-                        userId: userId,
-                        packageName: name,
-                        price: price,
-                        dailyProfit: profit,
-                        cycle: cycle,
-                        status: "active",
-                        purchaseDate: serverTimestamp()
-                    });
+                if (dbBalance < price) {
+                    loader.style.display = 'none';
+                    showStatusModal('error', 'Payment Failed!', 'You do not have sufficient balance.', price);
+                    return;
+                }
+
+                const newBalance = dbBalance - price;
+                await updateDoc(userRef, { balance: newBalance });
+                await addDoc(collection(db, "orders"), {
+                    userId: userId, packageName: name, price: price,
+                    dailyProfit: profit, cycle: cycle, status: "active",
+                    purchaseDate: serverTimestamp(), lastClaim: serverTimestamp()
                 });
 
-                const expiryTime = Date.now() + (120 * 1000);
-                localStorage.setItem('buyTimerExpiry', expiryTime);
-                startGlobalTimer(120);
-
-            } catch (e) {
-                btn.classList.replace('loading', 'failed');
-                btn.innerText = (e === "Insufficient Balance") ? "Low Balance!" : "Failed!";
-                setTimeout(() => {
-                    btn.disabled = false;
-                    btn.classList.remove('failed');
-                    btn.innerText = "Buy Now";
-                }, 2000);
+                loader.style.display = 'none';
+                showStatusModal('success', 'Successful!', `Purchased ${name}.`, price);
+            } catch (error) {
+                loader.style.display = 'none';
+                showStatusModal('error', 'Error!', 'Please try again.');
             }
+        };
+
+        window.toggleBalance = () => {
+            const container = document.getElementById('bal-container');
+            if(!container.classList.contains('active')) {
+                container.classList.add('pulse');
+                setTimeout(() => { container.classList.add('active'); container.classList.remove('pulse'); }, 100);
+                setTimeout(() => container.classList.remove('active'), 3500);
+            }
+        };
+
+        window.navigateTo = (url) => {
+            document.getElementById('loader-overlay').style.display = 'flex'; 
+            setTimeout(() => { window.location.href = url; }, 800); 
+        };
+
+        window.navSmart = (element, url, useIframe = false) => {
+            const allNavs = document.querySelectorAll('.nav-item');
+            allNavs.forEach(nav => nav.classList.remove('active'));
+            element.classList.add('active');
+            const mainScroll = document.getElementById('main-scroll');
+            const topContent = document.getElementById('top-content');
+            const contentFrame = document.getElementById('content-frame');
+            const loader = document.getElementById('loader-overlay');
+            loader.style.display = 'flex';
+            setTimeout(() => {
+                if (useIframe) {
+                    mainScroll.style.display = 'none';
+                    topContent.style.display = 'none';
+                    contentFrame.style.display = 'block';
+                    contentFrame.src = url;
+                    contentFrame.onload = () => loader.style.display = 'none';
+                } else if (url === 'home.html') {
+                    contentFrame.style.display = 'none';
+                    mainScroll.style.display = 'block';
+                    topContent.style.display = 'block';
+                    loader.style.display = 'none';
+                } else { window.location.href = url; }
+            }, 600);
         };
     </script>
 </body>
